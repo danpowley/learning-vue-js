@@ -195,7 +195,7 @@ Vue.component('team', {
         }
 
         if (matchupStatus === null) {
-          continue;
+          continue
         }
 
         const opponentHasOffered = matchupStatus !== 'REJECTED' && matchupTeam.matches.opponentOfferMadeTo.includes(this.team.id)
