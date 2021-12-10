@@ -67,7 +67,7 @@ const fakeFumbblApi = { // eslint-disable-line no-unused-vars
           teamValue: 950,
           coachId: 1,
           matches: {
-            availableTo: [1, 2, 3, 4],
+            availableTo: [1, 3, 4],
             offerMadeBy: [],
             rejectedBy: [],
             opponentOfferMadeTo: []
@@ -80,7 +80,7 @@ const fakeFumbblApi = { // eslint-disable-line no-unused-vars
           teamValue: 1270,
           coachId: 2,
           matches: {
-            availableTo: [1, 2, 3],
+            availableTo: [1, 3],
             offerMadeBy: [],
             rejectedBy: [],
             opponentOfferMadeTo: []
@@ -93,7 +93,7 @@ const fakeFumbblApi = { // eslint-disable-line no-unused-vars
           teamValue: 1970,
           coachId: 2,
           matches: {
-            availableTo: [2, 3, 4],
+            availableTo: [3, 4],
             offerMadeBy: [],
             rejectedBy: [],
             opponentOfferMadeTo: []
@@ -106,7 +106,7 @@ const fakeFumbblApi = { // eslint-disable-line no-unused-vars
           teamValue: 1970,
           coachId: 3,
           matches: {
-            availableTo: [3, 4],
+            availableTo: [1, 4],
             offerMadeBy: [],
             rejectedBy: [],
             opponentOfferMadeTo: []
