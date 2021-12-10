@@ -224,42 +224,41 @@ Vue.component('team', {
     },
     deactivateTeam () {
       fakeFumbblApi.deactivateTeam(this.team.id)
+      this.resetTeamInMatches(this.team.id, null)
       this.team.isActivated = false
     },
-    resetTeamInMatches (matches, myTeamId) {
+    resetTeamInMatches (myTeamId, opponentTeamId) {
       const clearValueFromArray = function (array, value) {
         const index = array.indexOf(value)
         if (index > -1) {
           array.splice(index, 1)
         }
       }
-      clearValueFromArray(matches.availableTo, myTeamId)
-      clearValueFromArray(matches.offerMadeBy, myTeamId)
-      clearValueFromArray(matches.rejectedBy, myTeamId)
+
+      for (const matchupTeam of this.matchupData.teams) {
+        if (matchupTeam.id === opponentTeamId || opponentTeamId === null) {
+          clearValueFromArray(matchupTeam.matches.availableTo, myTeamId)
+          clearValueFromArray(matchupTeam.matches.offerMadeBy, myTeamId)
+          clearValueFromArray(matchupTeam.matches.rejectedBy, myTeamId)
+          clearValueFromArray(matchupTeam.matches.opponentOfferMadeTo, myTeamId)
+
+          if (opponentTeamId !== null) {
+            return matchupTeam.matches
+          }
+        }
+      }
     },
     offerMatchup (myTeamId, opponentTeamId) {
-      for (const matchupTeam of this.matchupData.teams) {
-        if (matchupTeam.id === opponentTeamId) {
-          this.resetTeamInMatches(matchupTeam.matches, myTeamId)
-          matchupTeam.matches.offerMadeBy.push(myTeamId)
-        }
-      }
+      const matches = this.resetTeamInMatches(myTeamId, opponentTeamId);
+      matches.offerMadeBy.push(myTeamId)
     },
     rejectMatchup (myTeamId, opponentTeamId) {
-      for (const matchupTeam of this.matchupData.teams) {
-        if (matchupTeam.id === opponentTeamId) {
-          this.resetTeamInMatches(matchupTeam.matches, myTeamId)
-          matchupTeam.matches.rejectedBy.push(myTeamId)
-        }
-      }
+      const matches = this.resetTeamInMatches(myTeamId, opponentTeamId);
+      matches.rejectedBy.push(myTeamId)
     },
     availableMatchup (myTeamId, opponentTeamId) {
-      for (const matchupTeam of this.matchupData.teams) {
-        if (matchupTeam.id === opponentTeamId) {
-          this.resetTeamInMatches(matchupTeam.matches, myTeamId)
-          matchupTeam.matches.availableTo.push(myTeamId)
-        }
-      }
+      const matches = this.resetTeamInMatches(myTeamId, opponentTeamId);
+      matches.availableTo.push(myTeamId)
     }
   }
 })
