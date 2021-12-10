@@ -145,8 +145,8 @@ const fakeFumbblApi = { // eslint-disable-line no-unused-vars
     }
 
     // opponent offers
-    const chanceOfOffer = 0.05
-    const makeOffer = function (activeTeamIds, rejectedBy, opponentOfferMadeTo, myTeamId, chanceOfOffer) {
+    const makeOffer = function (activeTeamIds, rejectedBy, opponentOfferMadeTo, myTeamId) {
+      const chanceOfOffer = 0.05
       if (!activeTeamIds.includes(myTeamId)) {
         return
       }
@@ -157,10 +157,10 @@ const fakeFumbblApi = { // eslint-disable-line no-unused-vars
       }
     }
     for (const matchupTeam of matchupData.teams) {
-      makeOffer(activeTeamIds, matchupTeam.matches.rejectedBy, matchupTeam.matches.opponentOfferMadeTo, 1, chanceOfOffer)
-      makeOffer(activeTeamIds, matchupTeam.matches.rejectedBy, matchupTeam.matches.opponentOfferMadeTo, 2, chanceOfOffer)
-      makeOffer(activeTeamIds, matchupTeam.matches.rejectedBy, matchupTeam.matches.opponentOfferMadeTo, 3, chanceOfOffer)
-      makeOffer(activeTeamIds, matchupTeam.matches.rejectedBy, matchupTeam.matches.opponentOfferMadeTo, 4, chanceOfOffer)
+      makeOffer(activeTeamIds, matchupTeam.matches.rejectedBy, matchupTeam.matches.opponentOfferMadeTo, 1)
+      makeOffer(activeTeamIds, matchupTeam.matches.rejectedBy, matchupTeam.matches.opponentOfferMadeTo, 2)
+      makeOffer(activeTeamIds, matchupTeam.matches.rejectedBy, matchupTeam.matches.opponentOfferMadeTo, 3)
+      makeOffer(activeTeamIds, matchupTeam.matches.rejectedBy, matchupTeam.matches.opponentOfferMadeTo, 4)
 
       // Simulate declined offers
       if (Math.random() < 0.1) {
