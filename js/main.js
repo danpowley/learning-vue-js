@@ -249,15 +249,15 @@ Vue.component('team', {
       }
     },
     offerMatchup (myTeamId, opponentTeamId) {
-      const matches = this.resetTeamInMatches(myTeamId, opponentTeamId);
+      const matches = this.resetTeamInMatches(myTeamId, opponentTeamId)
       matches.offerMadeBy.push(myTeamId)
     },
     rejectMatchup (myTeamId, opponentTeamId) {
-      const matches = this.resetTeamInMatches(myTeamId, opponentTeamId);
+      const matches = this.resetTeamInMatches(myTeamId, opponentTeamId)
       matches.rejectedBy.push(myTeamId)
     },
     availableMatchup (myTeamId, opponentTeamId) {
-      const matches = this.resetTeamInMatches(myTeamId, opponentTeamId);
+      const matches = this.resetTeamInMatches(myTeamId, opponentTeamId)
       matches.availableTo.push(myTeamId)
     }
   }
