@@ -136,7 +136,7 @@ Vue.component('team', {
 
       <template v-if="team.isActivated">
         <div v-if="! matchesForTeam.length" class="gamefinder__match">
-          No matches found for team (try adjusting the settings below).
+          <span class="status-tag status-tag--searching">Searching...</span> No matches found for team (try adjusting the settings below).
         </div>
         <div v-for="matchup in matchesForTeam" :key="matchup.matchupKey">
           <match :matchup="matchup" @offer-matchup="offerMatchup" @reject-matchup="rejectMatchup" @available-matchup="availableMatchup"></match>
