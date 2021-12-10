@@ -280,10 +280,22 @@ new Vue({ // eslint-disable-line no-new
     myTeams: fakeFumbblApi.getMyTeams(),
     matchupData: {}
   },
+  computed: {
+    activeTeamIds () {
+      const activeTeamIds = []
+      for (const team of this.myTeams) {
+        if (team.isActivated) {
+          activeTeamIds.push(team.id)
+        }
+      }
+
+      return activeTeamIds
+    }
+  },
   created: function () {
     this.matchupData = fakeFumbblApi.getMatchupData()
     setInterval(function () {
-      this.matchupData = fakeFumbblApi.getMatchupDataCheating(this.matchupData)
+      this.matchupData = fakeFumbblApi.getMatchupDataCheating(this.matchupData, this.activeTeamIds)
     }.bind(this), 5000)
   }
 })

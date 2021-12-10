@@ -132,12 +132,12 @@ const fakeFumbblApi = { // eslint-disable-line no-unused-vars
       ]
     }
   },
-  getMatchupDataCheating (matchupData) {
+  getMatchupDataCheating (matchupData, activeTeamIds) {
     // NOT IMPORTANT: just trickery to simulate some opponent activity
 
     console.log('[CHEATING] Fetching latest matchup data from FUMBBL API (FUMBBL already notified which teams are active and which matchups rejected).')
 
-    // remove a team entirely
+    // remove an opponent team entirely
     const chanceOfTeamRemove = 0.1
     if (Math.random() < chanceOfTeamRemove) {
       const randomTeamIndex = Math.floor(Math.random() * matchupData.teams.length)
@@ -146,30 +146,21 @@ const fakeFumbblApi = { // eslint-disable-line no-unused-vars
 
     // opponent offers
     const chanceOfOffer = 0.05
+    const makeOffer = function (activeTeamIds, rejectedBy, opponentOfferMadeTo, myTeamId, chanceOfOffer) {
+      if (!activeTeamIds.includes(myTeamId)) {
+        return
+      }
+      if (!rejectedBy.includes(myTeamId) && !opponentOfferMadeTo.includes(myTeamId)) {
+        if (Math.random() < chanceOfOffer) {
+          opponentOfferMadeTo.push(myTeamId)
+        }
+      }
+    }
     for (const matchupTeam of matchupData.teams) {
-      if (!matchupTeam.matches.rejectedBy.includes(1) && !matchupTeam.matches.opponentOfferMadeTo.includes(1)) {
-        if (Math.random() < chanceOfOffer) {
-          matchupTeam.matches.opponentOfferMadeTo.push(1)
-        }
-      }
-
-      if (!matchupTeam.matches.rejectedBy.includes(2) && !matchupTeam.matches.opponentOfferMadeTo.includes(2)) {
-        if (Math.random() < chanceOfOffer) {
-          matchupTeam.matches.opponentOfferMadeTo.push(2)
-        }
-      }
-
-      if (!matchupTeam.matches.rejectedBy.includes(3) && !matchupTeam.matches.opponentOfferMadeTo.includes(3)) {
-        if (Math.random() < chanceOfOffer) {
-          matchupTeam.matches.opponentOfferMadeTo.push(3)
-        }
-      }
-
-      if (!matchupTeam.matches.rejectedBy.includes(4) && !matchupTeam.matches.opponentOfferMadeTo.includes(4)) {
-        if (Math.random() < chanceOfOffer) {
-          matchupTeam.matches.opponentOfferMadeTo.push(4)
-        }
-      }
+      makeOffer(activeTeamIds, matchupTeam.matches.rejectedBy, matchupTeam.matches.opponentOfferMadeTo, 1, chanceOfOffer)
+      makeOffer(activeTeamIds, matchupTeam.matches.rejectedBy, matchupTeam.matches.opponentOfferMadeTo, 2, chanceOfOffer)
+      makeOffer(activeTeamIds, matchupTeam.matches.rejectedBy, matchupTeam.matches.opponentOfferMadeTo, 3, chanceOfOffer)
+      makeOffer(activeTeamIds, matchupTeam.matches.rejectedBy, matchupTeam.matches.opponentOfferMadeTo, 4, chanceOfOffer)
 
       // Simulate declined offers
       if (Math.random() < 0.1) {
