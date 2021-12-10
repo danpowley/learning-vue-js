@@ -62,7 +62,7 @@ const fakeFumbblApi = { // eslint-disable-line no-unused-vars
       teams: [
         {
           id: 101,
-          name: 'Bob\'s Horrible Nobility Team',
+          name: 'Horrible Nobility Team',
           race: 'Imperial Nobility',
           teamValue: 950,
           coachId: 1,
@@ -75,7 +75,7 @@ const fakeFumbblApi = { // eslint-disable-line no-unused-vars
         },
         {
           id: 102,
-          name: 'Bill\'s Awful Slaan Team',
+          name: 'Awful Slaan Team',
           race: 'Slaan',
           teamValue: 1270,
           coachId: 2,
@@ -88,7 +88,7 @@ const fakeFumbblApi = { // eslint-disable-line no-unused-vars
         },
         {
           id: 103,
-          name: 'Bill\'s Dreaded Orc Team',
+          name: 'Dreaded Orc Team',
           race: 'Orc',
           teamValue: 1970,
           coachId: 2,
@@ -101,7 +101,7 @@ const fakeFumbblApi = { // eslint-disable-line no-unused-vars
         },
         {
           id: 104,
-          name: 'Fred\'s Dreaded Skaven Team',
+          name: 'Dreaded Skaven Team',
           race: 'Skaven',
           teamValue: 1970,
           coachId: 3,
