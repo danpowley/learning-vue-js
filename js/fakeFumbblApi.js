@@ -170,19 +170,19 @@ const fakeFumbblApi = { // eslint-disable-line no-unused-vars
 
     // Add a new team
     // no more than 20 teams in circulation total, and not adding on every single api call
-    if (matchupData.teams.length < 20 && Math.random() < 0.2) {
+    if (activeTeamIds.length > 0 && matchupData.teams.length < 20 && Math.random() < 0.2) {
       let maxTeamId = 0
       for (const matchupTeam of matchupData.teams) {
         if (maxTeamId < matchupTeam.id) {
           maxTeamId = matchupTeam.id
         }
       }
-      matchupData.teams.push(this.makeAFakeTeam(maxTeamId + 1))
+      matchupData.teams.push(this.makeAFakeTeam(maxTeamId + 1, activeTeamIds))
     }
 
     return matchupData
   },
-  makeAFakeTeam (teamId) {
+  makeAFakeTeam (teamId, activeTeamIds) {
     const words = ['Amazing', 'Beak', 'Lamp', 'Warriors', 'North', 'Green', 'Vicious', 'Triple', 'Iron', 'Golden']
     const word1 = words[Math.floor(Math.random() * words.length)]
     const word2 = words[Math.floor(Math.random() * words.length)]
@@ -199,21 +199,15 @@ const fakeFumbblApi = { // eslint-disable-line no-unused-vars
 
     // 50/50 whether to match to each of my teams
     const availableTo = []
-    if (Math.random() > 0.5) {
-      availableTo.push(1)
+    for (const activeTeamId of activeTeamIds) {
+      if (Math.random() > 0.5) {
+        availableTo.push(activeTeamId)
+      }
     }
-    if (Math.random() > 0.5) {
-      availableTo.push(2)
-    }
-    if (Math.random() > 0.5) {
-      availableTo.push(3)
-    }
-    if (Math.random() > 0.5) {
-      availableTo.push(4)
-    }
+
     // always available to at least one of them
     if (availableTo.length === 0) {
-      availableTo.push(4)
+      availableTo.push(activeTeamIds[Math.floor(Math.random() * activeTeamIds.length)])
     }
 
     return {
