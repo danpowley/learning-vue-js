@@ -1,0 +1,31 @@
+body {
+  font-family: Arial,Sans-serif;
+  margin: 0;
+  background: #224522 url(../images/background.jpg) repeat-y center top;
+  text-align: center;
+  font-size: 10pt;
+}
+
+.contentwrapper {
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+  background: #e6ddc7;
+  text-align: left;
+  min-height: 100%;
+  margin-bottom: -266px;
+  height: auto!important;
+  height: 100%;
+  width: 1000px;
+}
+
+.pagecontent {
+  width: 960px;
+  margin: 0 20px 0 20px;
+  height: 100%;
+}
+
+.topheader {
+  background: #670000 url(../images/headerbg2.png) no-repeat left top;
+  height: 90px;
+}
