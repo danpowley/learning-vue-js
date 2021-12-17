@@ -1,6 +1,7 @@
 <template>
   <div>
-    <div>Coach: {{ coach.name }}</div>
+    <h2>Coach: {{ coach.name }}</h2>
+    <div>NOTE: Refreshing the page generates a completely new coach identity.</div>
     <game-finder :my-teams="myTeams" :matchup-data="matchupData"></game-finder>
   </div>
 </template>
@@ -19,13 +20,13 @@ export default Vue.extend({
   data() {
     return {
       coach: getCoach(),
-      myTeams: getMyTeams(),
+      myTeams: [] as Team[],
       matchupData: {teams: [], coaches: []},
     }
   },
   computed: {
     activeTeams (): Team[] {
-      const activeTeams = []
+      const activeTeams: Team[] = []
       for (const team of this.myTeams) {
         if (team.isActivated) {
           activeTeams.push(team)
@@ -36,6 +37,8 @@ export default Vue.extend({
     }
   },
   created: function (): void {
+    this.myTeams = getMyTeams(this.coach.id)
+
     // Unusual type hinting on the callback for setInterval, just to suppress warnings.
     setInterval(function (this: { coach: Coach, activeTeams: Team[], matchupData: MatchupData }): void {
       axios.post('http://localhost:3000/coach/apply-teams', {coach: this.coach, teams: this.activeTeams})

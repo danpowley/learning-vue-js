@@ -1,25 +1,13 @@
-export interface BaseTeam {
+export interface Team {
   id: number,
+  coachId: number,
   name: string,
   race: string,
   teamValue: number,
-  division: string
-}
-
-export interface Team extends BaseTeam {
-  isActivated: boolean
-}
-
-export interface OpponentTeam extends BaseTeam {
-  coachId: number,
-  matches: MatchSettings
-}
-
-export interface MatchSettings {
-  availableTo: number[],
-  offerMadeBy: number[],
-  rejectedBy: number[],
-  opponentOfferMadeTo: number[]
+  division: string,
+  offers: [],
+  rejections: [],
+  isActivated: boolean,
 }
 
 export interface Coach {
@@ -29,11 +17,11 @@ export interface Coach {
 }
 
 export interface MatchupData {
-  teams: OpponentTeam[],
+  teams: Team[],
   coaches: Coach[]
 }
 
-export type MatchupStatus = 'AVAILABLE' | 'OFFERED' | 'REJECTED' | 'ERROR' | null;
+export type MatchupStatus = 'AVAILABLE' | 'OFFERED' | 'OPPONENT_OFFERED' | 'REJECTED' | 'PLAY'
 
 export interface Matchup {
   myTeamId: number,
@@ -42,8 +30,7 @@ export interface Matchup {
   race: string,
   coachDetails: Coach[],
   teamValue: number,
-  matchupStatus: MatchupStatus,
-  opponentHasOffered: boolean
+  matchupStatus: MatchupStatus
 }
 
 function getRandomInteger(max: number): number {
@@ -78,14 +65,22 @@ function getRandomTeamName(): string {
   return `${getRandomArrayElement(words)} ${getRandomArrayElement(words)} ${getRandomArrayElement(words)}`
 }
 
-function getRandomTeam(): Team {
+function getRandomLevel(): string {
+  const levels = ['Veteran', 'Experienced', 'Emerging Star', 'Star', 'Super Star', 'Legend']
+  return getRandomArrayElement(levels)
+}
+
+function getRandomTeam(coachId: number): Team {
   return {
     id: getRandomId(),
+    coachId: coachId,
     name: getRandomTeamName(),
     race: getRandomRace(),
     teamValue: (getRandomInteger(20) * 100) + 700,
     division: getRandomDivision(),
-    isActivated: getRandomBoolean()
+    isActivated: getRandomBoolean(),
+    offers: [],
+    rejections: []
   }
 }
 
@@ -95,42 +90,16 @@ export function getCoach(): Coach {
   return {
     id: getRandomId(),
     name: coachName + getRandomInteger(10000),
-    level: 'Star'
+    level: getRandomLevel()
   }
 }
 
-export function getMyTeams (): Team[] {
-  console.log('Fetching my Teams from FUMBBL API (remembers which teams were activated from previous occasions).')
-
+export function getMyTeams (coachId: number): Team[] {
   return [
-    getRandomTeam(),
-    getRandomTeam(),
-    getRandomTeam(),
-    getRandomTeam(),
-    getRandomTeam(),
+    getRandomTeam(coachId),
+    getRandomTeam(coachId),
+    getRandomTeam(coachId),
+    getRandomTeam(coachId),
+    getRandomTeam(coachId),
   ]
-}
-
-export function activateTeam (teamId: number): void {
-  console.log('Notifying FUMBBL API that team id is activated', teamId)
-}
-
-export function deactivateTeam (teamId: number): void {
-  console.log('Notifying FUMBBL API that team id is deactivated', teamId)
-}
-
-export function offerMatchup (myTeamId: number, opponentTeamId: number): void {
-  console.log('Notifying FUMBBL API that matchup is offered', myTeamId, opponentTeamId)
-}
-
-export function rejectMatchup (myTeamId: number, opponentTeamId: number): void {
-  console.log('Notifying FUMBBL API that matchup is rejected', myTeamId, opponentTeamId)
-}
-
-export function availableMatchup (myTeamId: number, opponentTeamId: number): void {
-  console.log('Notifying FUMBBL API that matchup is to return to available (neither offered or rejected)', myTeamId, opponentTeamId)
-}
-
-export function startMatch (myTeamId: number, opponentTeamId: number): void {
-  console.log('Notifying FUMBBL API that we want to start a match', myTeamId, opponentTeamId)
 }
