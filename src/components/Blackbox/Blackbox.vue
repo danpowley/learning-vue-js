@@ -11,6 +11,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import { PropType } from 'vue';
+import axios from 'axios'
 import { Team, Coach } from '@/fake-fumbbl-api'
 
 export default Vue.extend({
@@ -23,7 +24,12 @@ export default Vue.extend({
     myTeams: {
       type: Array as PropType<Team[]>,
       required: true
-    },
+    }
+  },
+  data() {
+    return {
+      pollingIntervalId: undefined as number | undefined,
+    }
   },
   computed: {
     activeTeams (): Team[] {
@@ -38,10 +44,15 @@ export default Vue.extend({
     }
   },
   created: function (): void {
-    // Unusual type hinting on the callback for setInterval, just to suppress warnings.
-    setInterval(function (this: {coach: Coach}): void {
-      console.log('blackbox...')
+    this.pollingIntervalId = setInterval(function (this: {coach: Coach, activeTeams: Team[]}): void {
+      axios.post('http://localhost:3000/blackbox/apply', {coach: this.coach, teams: this.activeTeams})
+        .then((response) => {
+          console.log(response.data)
+        })
     }.bind(this), 5000)
+  },
+  destroyed: function (): void {
+    clearInterval(this.pollingIntervalId)
   }
 });
 </script>

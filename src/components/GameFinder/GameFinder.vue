@@ -36,6 +36,7 @@ export default Vue.extend({
   data() {
     return {
       matchupData: {teams: [], coaches: []},
+      pollingIntervalId: undefined as number | undefined,
     }
   },
   computed: {
@@ -51,14 +52,15 @@ export default Vue.extend({
     }
   },
   created: function (): void {
-    // Unusual type hinting on the callback for setInterval, just to suppress warnings.
-    setInterval(function (this: { coach: Coach, activeTeams: Team[], matchupData: MatchupData }): void {
-      console.log('gamefinder...')
-      axios.post('http://localhost:3000/coach/apply-teams', {coach: this.coach, teams: this.activeTeams})
+    this.pollingIntervalId = setInterval(function (this: { coach: Coach, activeTeams: Team[], matchupData: MatchupData }): void {
+      axios.post('http://localhost:3000/game-finder/apply', {coach: this.coach, teams: this.activeTeams})
         .then((response) => {
           this.matchupData = response.data
         })
     }.bind(this), 5000)
+  },
+  destroyed: function (): void {
+    clearInterval(this.pollingIntervalId)
   }
 });
 </script>
