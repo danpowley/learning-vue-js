@@ -44,7 +44,7 @@
     <template v-if="isLoggedIn()">
       <h4>General demo info</h4>
       <ul>
-        <li>Choose a coach name below to simulate logging in.</li>
+        <li>Choose a coach name above to simulate logging in.</li>
         <li>Use the generate team button to add 1 or more teams to use for finding games.</li>
         <li>Open another tab to log in as another coach, try to arrange games between tabs.</li>
       </ul>
