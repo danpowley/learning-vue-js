@@ -66,7 +66,7 @@ function getRandomTeamName(): string {
 }
 
 function getRandomLevel(): string {
-  const levels = ['Veteran', 'Experienced', 'Emerging Star', 'Star', 'Super Star', 'Legend']
+  const levels = ['Rookie', 'Veteran', 'Experienced', 'Emerging Star', 'Star', 'Super Star', 'Legend']
   return getRandomArrayElement(levels)
 }
 

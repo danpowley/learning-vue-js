@@ -1,7 +1,7 @@
 <template>
   <div>
     <template v-if="isLoggedIn()">
-      <h2>Coach: {{ coach.name }}</h2>
+      <div style="float: right; font-size: 16pt">Coach: {{ coach.name }} ({{ coach.level }})</div>
       <game-finder :my-teams="myTeams" :matchup-data="matchupData"></game-finder>
     </template>
     <template v-else>
