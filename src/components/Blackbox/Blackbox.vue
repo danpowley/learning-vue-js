@@ -1,10 +1,18 @@
 <template>
 <div style="margin-bottom: 100px;">
-  <h2>Blackbox component</h2>
+  <h2>Blackbox</h2>
 
   <div v-show="!myTeams.length" style="font-size: larger;">
     No teams available: use the demo settings below to add teams.
   </div>
+
+  <template v-for="team in myTeams">
+    <div :key="team.id">
+      <input type="checkbox" :id="'blackbox-apply-team-' + team.id" v-model="appliedTeamIds" :value="team.id" />
+      <label :for="'blackbox-apply-team-' + team.id">{{ team.name }}</label>
+    </div>
+  </template>
+
 </div>
 </template>
 
@@ -28,24 +36,25 @@ export default Vue.extend({
   },
   data() {
     return {
+      appliedTeamIds: [] as number[],
       pollingIntervalId: undefined as number | undefined,
     }
   },
   computed: {
-    activeTeams (): Team[] {
-      const activeTeams: Team[] = []
+    appliedTeams (): Team[] {
+      const appliedTeams: Team[] = []
       for (const team of this.myTeams) {
-        if (team.isActivated) {
-          activeTeams.push(team)
+        if (this.appliedTeamIds.includes(team.id)) {
+          appliedTeams.push(team)
         }
       }
 
-      return activeTeams
+      return appliedTeams
     }
   },
   created: function (): void {
-    this.pollingIntervalId = setInterval(function (this: {coach: Coach, activeTeams: Team[]}): void {
-      axios.post('http://localhost:3000/blackbox/apply', {coach: this.coach, teams: this.activeTeams})
+    this.pollingIntervalId = setInterval(function (this: {coach: Coach, appliedTeams: Team[]}): void {
+      axios.post('http://localhost:3000/blackbox/apply', {coach: this.coach, teams: this.appliedTeams})
         .then((response) => {
           console.log(response.data)
         })
