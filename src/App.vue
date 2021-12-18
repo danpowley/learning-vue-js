@@ -57,7 +57,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import { Team, getCoach, getRandomTeam } from '@/fake-fumbbl-api'
-import GameFinder from '@/components/GameFinder.vue'
+import GameFinder from '@/components/GameFinder/GameFinder.vue'
 
 export default Vue.extend({
   name: 'App',

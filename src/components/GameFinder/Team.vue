@@ -51,7 +51,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import { PropType } from 'vue';
-import Match from '@/components/Match.vue'
+import Match from '@/components/GameFinder/Match.vue'
 import { Team, Matchup, MatchupStatus, MatchupData } from '@/fake-fumbbl-api';
 
 export default Vue.extend({

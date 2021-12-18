@@ -15,7 +15,7 @@
 import Vue from 'vue';
 import { PropType } from 'vue';
 import axios from 'axios'
-import TeamComponent from '@/components/Team.vue'
+import TeamComponent from '@/components/GameFinder/Team.vue'
 import { Team, Coach, MatchupData } from '@/fake-fumbbl-api'
 
 export default Vue.extend({
