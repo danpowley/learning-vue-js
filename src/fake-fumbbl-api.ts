@@ -84,12 +84,10 @@ export function getRandomTeam(coachId: number): Team {
   }
 }
 
-export function getCoach(): Coach {
-  const words = ['weird', 'purple', 'sour', 'bog', 'paper', 'bird', 'man', 'fish', 'click', 'crack', 'static', 'funk', 'bot', 'trick', 'proud']
-  const coachName = `${getRandomArrayElement(words)}${getRandomArrayElement(words)}`
+export function getCoach(coachName: string): Coach {
   return {
     id: getRandomId(),
-    name: coachName + getRandomInteger(10000),
+    name: coachName,
     level: getRandomLevel()
   }
 }

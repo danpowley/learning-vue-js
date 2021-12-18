@@ -1,7 +1,7 @@
 <template>
 <div class="gamefinder">
+  <div v-show="!myTeams.length" style="font-size: larger;">No teams available: use the demo settings below to add teams.</div>
   <div v-for="team in myTeams" :key="team.id">
-    <hr>
     <team :team="team" :matchup-data="matchupData"></team>
   </div>
 </div>
