@@ -12,7 +12,7 @@
         <game-finder :coach="coach" :my-teams="myTeams"></game-finder>
       </template>
       <template v-if="isSearchModeBlackBox">
-        Black box
+        <blackbox :coach="coach" :my-teams="myTeams"></blackbox>
       </template>
     </template>
     <template v-else>
@@ -58,11 +58,13 @@
 import Vue from 'vue'
 import { Team, getCoach, getRandomTeam } from '@/fake-fumbbl-api'
 import GameFinder from '@/components/GameFinder/GameFinder.vue'
+import Blackbox from '@/components/Blackbox/Blackbox.vue'
 
 export default Vue.extend({
   name: 'App',
   components: {
-    GameFinder
+    GameFinder,
+    Blackbox
   },
   data() {
     return {

@@ -1,12 +1,9 @@
 <template>
-<div class="gamefinder" style="margin-bottom: 100px;">
-  <h2>Game finder</h2>
+<div style="margin-bottom: 100px;">
+  <h2>Blackbox component</h2>
 
   <div v-show="!myTeams.length" style="font-size: larger;">
     No teams available: use the demo settings below to add teams.
-  </div>
-  <div v-for="team in myTeams" :key="team.id">
-    <team-component :team="team" :matchup-data="matchupData"></team-component>
   </div>
 </div>
 </template>
@@ -14,15 +11,10 @@
 <script lang="ts">
 import Vue from 'vue';
 import { PropType } from 'vue';
-import axios from 'axios'
-import TeamComponent from '@/components/GameFinder/Team.vue'
-import { Team, Coach, MatchupData } from '@/fake-fumbbl-api'
+import { Team, Coach } from '@/fake-fumbbl-api'
 
 export default Vue.extend({
-  name: 'GameFinder',
-  components: {
-    TeamComponent
-  },
+  name: 'Blackbox',
   props: {
     coach: {
       type: Object as PropType<Coach>,
@@ -32,11 +24,6 @@ export default Vue.extend({
       type: Array as PropType<Team[]>,
       required: true
     },
-  },
-  data() {
-    return {
-      matchupData: {teams: [], coaches: []},
-    }
   },
   computed: {
     activeTeams (): Team[] {
@@ -52,12 +39,8 @@ export default Vue.extend({
   },
   created: function (): void {
     // Unusual type hinting on the callback for setInterval, just to suppress warnings.
-    setInterval(function (this: { coach: Coach, activeTeams: Team[], matchupData: MatchupData }): void {
-      console.log('gamefinder...')
-      axios.post('http://localhost:3000/coach/apply-teams', {coach: this.coach, teams: this.activeTeams})
-        .then((response) => {
-          this.matchupData = response.data
-        })
+    setInterval(function (this: {coach: Coach}): void {
+      console.log('blackbox...')
     }.bind(this), 5000)
   }
 });
