@@ -1,13 +1,16 @@
 <template>
-  <div id="app">
+  <div>
+    <h2>Coach: {{ coach.name }}</h2>
+    <div>NOTE: Refreshing the page generates a completely new coach identity.</div>
     <game-finder :my-teams="myTeams" :matchup-data="matchupData"></game-finder>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
-import { MatchupData, getMyTeams, getMatchupData, getMatchupDataCheating } from './fake-fumbbl-api';
+import { Coach, MatchupData, Team, getCoach, getMyTeams } from './fake-fumbbl-api'
 import GameFinder from './components/GameFinder.vue'
+import axios from 'axios'
 
 export default Vue.extend({
   name: 'App',
@@ -16,30 +19,35 @@ export default Vue.extend({
   },
   data() {
     return {
-      myTeams: getMyTeams(),
-      matchupData: getMatchupData()
+      coach: getCoach(),
+      myTeams: [] as Team[],
+      matchupData: {teams: [], coaches: []},
     }
   },
   computed: {
-    activeTeamIds (): number[] {
-      const activeTeamIds = []
+    activeTeams (): Team[] {
+      const activeTeams: Team[] = []
       for (const team of this.myTeams) {
         if (team.isActivated) {
-          activeTeamIds.push(team.id)
+          activeTeams.push(team)
         }
       }
 
-      return activeTeamIds
+      return activeTeams
     }
   },
   created: function (): void {
+    this.myTeams = getMyTeams(this.coach.id)
+
     // Unusual type hinting on the callback for setInterval, just to suppress warnings.
-    setInterval(function (this: { matchupData: MatchupData, activeTeamIds: number[] }): void {
-      this.matchupData = getMatchupDataCheating(this.matchupData, this.activeTeamIds)
+    setInterval(function (this: { coach: Coach, activeTeams: Team[], matchupData: MatchupData }): void {
+      axios.post('http://localhost:3000/coach/apply-teams', {coach: this.coach, teams: this.activeTeams})
+        .then((response) => {
+          this.matchupData = response.data
+        })
     }.bind(this), 5000)
   }
 })
-
 </script>
 
 <style>

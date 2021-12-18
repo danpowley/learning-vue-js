@@ -3,7 +3,7 @@
   <div style="float: right;">
 
     <template v-if="isOpponentOffered">
-      <button @click="startMatch">Start Match</button>
+      <button @click="offerMatchup">Accept</button>
       <button @click="rejectMatchup">Reject</button>
     </template>
     <template v-else-if="isAvailable">
@@ -15,6 +15,9 @@
     </template>
     <template v-else-if="isRejected">
       <button @click="availableMatchup">Undo Reject</button>
+    </template>
+    <template v-else-if="isPlay">
+      <button @click="startMatch">Start Match</button>
     </template>
     <template v-else>
       Error, unknown status.
@@ -36,12 +39,12 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { startMatch, offerMatchup, rejectMatchup, availableMatchup } from '../fake-fumbbl-api';
 
 interface MatchClassObject {
   matchupOffered: boolean,
   matchupRejected: boolean,
-  opponentOffered: boolean
+  opponentOffered: boolean,
+  play: boolean
 }
 
 export default Vue.extend({
@@ -53,9 +56,6 @@ export default Vue.extend({
     matchupKey (): string {
       return `${this.matchup.myTeamId}-${this.matchup.opponentTeamId}`
     },
-    isOpponentOffered (): boolean {
-      return this.matchup.opponentHasOffered === true
-    },
     isAvailable (): boolean {
       return this.matchup.matchupStatus === 'AVAILABLE'
     },
@@ -65,14 +65,18 @@ export default Vue.extend({
     isRejected (): boolean {
       return this.matchup.matchupStatus === 'REJECTED'
     },
-    isError (): boolean {
-      return this.matchup.matchupStatus === 'ERROR'
+    isOpponentOffered (): boolean {
+      return this.matchup.matchupStatus === 'OPPONENT_OFFERED'
+    },
+    isPlay (): boolean {
+      return this.matchup.matchupStatus === 'PLAY'
     },
     matchClassObject (): MatchClassObject {
       return {
         matchupOffered: this.isOffered,
         matchupRejected: this.isRejected,
-        opponentOffered: this.isOpponentOffered
+        opponentOffered: this.isOpponentOffered,
+        play: this.isPlay
       }
     },
     statusTagClass (): string | false {
@@ -84,6 +88,9 @@ export default Vue.extend({
       }
       if (this.isOffered) {
         return 'status-tag--offered'
+      }
+      if (this.isPlay) {
+        return 'status-tag--play'
       }
       return false
     },
@@ -97,25 +104,24 @@ export default Vue.extend({
       if (this.isOffered) {
         return 'You have offered.'
       }
+      if (this.isPlay) {
+        return 'Match agreed.'
+      }
       return false
     }
   },
   methods: {
     startMatch () {
-      startMatch(this.matchup.myTeamId, this.matchup.opponentTeamId)
       alert('Sorry, we haven\'t quite got round to this bit!')
     },
     offerMatchup () {
-      offerMatchup(this.matchup.myTeamId, this.matchup.opponentTeamId)
-      this.$emit('offer-matchup', this.matchup.myTeamId, this.matchup.opponentTeamId)
+      this.$emit('offer-matchup', this.matchup.opponentTeamId)
     },
     rejectMatchup () {
-      rejectMatchup(this.matchup.myTeamId, this.matchup.opponentTeamId)
-      this.$emit('reject-matchup', this.matchup.myTeamId, this.matchup.opponentTeamId)
+      this.$emit('reject-matchup', this.matchup.opponentTeamId)
     },
     availableMatchup () {
-      availableMatchup(this.matchup.myTeamId, this.matchup.opponentTeamId)
-      this.$emit('available-matchup', this.matchup.myTeamId, this.matchup.opponentTeamId)
+      this.$emit('available-matchup', this.matchup.opponentTeamId)
     }
   }
 });
@@ -139,6 +145,10 @@ export default Vue.extend({
   background-color: rgb(209, 248, 209);
 }
 
+.play {
+  background-color: rgb(221, 159, 250);
+}
+
 .status-tag {
   font-size: smaller;
   padding: 2px 5px;
@@ -157,5 +167,10 @@ export default Vue.extend({
 .status-tag--offered {
   color: white;
   background-color: rgb(255, 174, 0);
+}
+
+.status-tag--play {
+  color: white;
+  background-color: purple;
 }
 </style>
