@@ -1,8 +1,8 @@
 <template>
-<div class="gamefinder">
+<div class="gamefinder" style="margin-bottom: 100px;">
   <h2>Game finder</h2>
 
-  <div v-show="!myTeams.length" style="font-size: larger; margin-bottom: 100px;">
+  <div v-show="!myTeams.length" style="font-size: larger;">
     No teams available: use the demo settings below to add teams.
   </div>
   <div v-for="team in myTeams" :key="team.id">
