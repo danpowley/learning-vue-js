@@ -13,6 +13,27 @@
     </div>
   </template>
 
+  <div>
+    <button @click="applyTeams">Apply teams</button>
+  </div>
+
+  <div>
+    <button @click="getDrawResults">Get draw results</button>
+  </div>
+
+  <template v-for="drawResult in drawResults">
+    <div :key="drawResult.drawKey">
+      <h3>{{ drawResult.date }}</h3>
+      <template v-for="teamPair in drawResult.matches">
+        <div :key="teamPair[0].id + '-' + teamPair[1].id">
+          <div>{{ teamPair[0] }}</div>
+          v's
+          <div>{{ teamPair[1] }}</div>
+        </div>
+      </template>
+    </div>
+  </template>
+
 </div>
 </template>
 
@@ -37,7 +58,7 @@ export default Vue.extend({
   data() {
     return {
       appliedTeamIds: [] as number[],
-      pollingIntervalId: undefined as number | undefined,
+      drawResults: []
     }
   },
   computed: {
@@ -52,16 +73,19 @@ export default Vue.extend({
       return appliedTeams
     }
   },
-  created: function (): void {
-    this.pollingIntervalId = setInterval(function (this: {coach: Coach, appliedTeams: Team[]}): void {
+  methods: {
+    applyTeams() {
       axios.post('http://localhost:3000/blackbox/apply', {coach: this.coach, teams: this.appliedTeams})
         .then((response) => {
           console.log(response.data)
         })
-    }.bind(this), 5000)
-  },
-  destroyed: function (): void {
-    clearInterval(this.pollingIntervalId)
+    },
+    getDrawResults() {
+      axios.get('http://localhost:3000/blackbox/draw-results')
+        .then((response) => {
+          this.drawResults = response.data
+        })
+    }
   }
 });
 </script>
