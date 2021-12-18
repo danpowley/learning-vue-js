@@ -2,7 +2,18 @@
   <div>
     <template v-if="isLoggedIn()">
       <div style="float: right; font-size: 16pt">Coach: {{ coach.name }} ({{ coach.level }})</div>
-      <game-finder :my-teams="myTeams" :matchup-data="matchupData"></game-finder>
+      <div style="margin-top: 20px;">
+        Choose mode:
+        <button @click="setSearchModeGameFinder()">Game finder</button>
+        <button @click="setSearchModeBlackbox()">Blackbox</button>
+      </div>
+
+      <template v-if="isSearchModeGameFinder">
+        <game-finder :my-teams="myTeams" :matchup-data="matchupData"></game-finder>
+      </template>
+      <template v-if="isSearchModeBlackBox">
+        Black box
+      </template>
     </template>
     <template v-else>
       <h2>Welcome to the demo</h2>
@@ -56,6 +67,7 @@ export default Vue.extend({
   },
   data() {
     return {
+      searchMode: 'GAME_FINDER',
       coach: {id: 0, name: 'Please choose coach name below', 'level': 'Rookie'},
       newCoachName: '',
       myTeams: [] as Team[],
@@ -72,6 +84,12 @@ export default Vue.extend({
       }
 
       return activeTeams
+    },
+    isSearchModeGameFinder (): boolean {
+      return this.searchMode === 'GAME_FINDER'
+    },
+    isSearchModeBlackBox (): boolean {
+      return this.searchMode === 'BLACKBOX'
     }
   },
   methods: {
@@ -92,6 +110,12 @@ export default Vue.extend({
       } else {
         alert('Sorry, can\'t be blank.')
       }
+    },
+    setSearchModeGameFinder() {
+      this.searchMode = 'GAME_FINDER'
+    },
+    setSearchModeBlackbox() {
+      this.searchMode = 'BLACKBOX'
     }
   },
   created: function (): void {
