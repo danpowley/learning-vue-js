@@ -50,8 +50,9 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import Match from './Match.vue'
-import { Matchup, MatchupStatus } from '../fake-fumbbl-api';
+import { PropType } from 'vue';
+import Match from '@/components/Match.vue'
+import { Team, Matchup, MatchupStatus, MatchupData } from '@/fake-fumbbl-api';
 
 export default Vue.extend({
   name: 'Team',
@@ -59,8 +60,14 @@ export default Vue.extend({
     Match
   },
   props: {
-    team: Object,
-    matchupData: Object
+    team: {
+      type: Object as PropType<Team>,
+      required: true
+    },
+    matchupData: {
+      type: Object as PropType<MatchupData>,
+      required: true
+    },
   },
   data () {
     return {

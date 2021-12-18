@@ -9,7 +9,7 @@
       </div>
 
       <template v-if="isSearchModeGameFinder">
-        <game-finder :my-teams="myTeams" :matchup-data="matchupData"></game-finder>
+        <game-finder :coach="coach" :my-teams="myTeams"></game-finder>
       </template>
       <template v-if="isSearchModeBlackBox">
         Black box
@@ -56,9 +56,8 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Coach, MatchupData, Team, getCoach, getRandomTeam } from './fake-fumbbl-api'
-import GameFinder from './components/GameFinder.vue'
-import axios from 'axios'
+import { Team, getCoach, getRandomTeam } from '@/fake-fumbbl-api'
+import GameFinder from '@/components/GameFinder.vue'
 
 export default Vue.extend({
   name: 'App',
@@ -70,21 +69,10 @@ export default Vue.extend({
       searchMode: 'GAME_FINDER',
       coach: {id: 0, name: 'Please choose coach name below', 'level': 'Rookie'},
       newCoachName: '',
-      myTeams: [] as Team[],
-      matchupData: {teams: [], coaches: []},
+      myTeams: [] as Team[]
     }
   },
   computed: {
-    activeTeams (): Team[] {
-      const activeTeams: Team[] = []
-      for (const team of this.myTeams) {
-        if (team.isActivated) {
-          activeTeams.push(team)
-        }
-      }
-
-      return activeTeams
-    },
     isSearchModeGameFinder (): boolean {
       return this.searchMode === 'GAME_FINDER'
     },
@@ -117,15 +105,6 @@ export default Vue.extend({
     setSearchModeBlackbox() {
       this.searchMode = 'BLACKBOX'
     }
-  },
-  created: function (): void {
-    // Unusual type hinting on the callback for setInterval, just to suppress warnings.
-    setInterval(function (this: { coach: Coach, activeTeams: Team[], matchupData: MatchupData }): void {
-      axios.post('http://localhost:3000/coach/apply-teams', {coach: this.coach, teams: this.activeTeams})
-        .then((response) => {
-          this.matchupData = response.data
-        })
-    }.bind(this), 5000)
   }
 })
 </script>

@@ -5,8 +5,8 @@ export interface Team {
   race: string,
   teamValue: number,
   division: string,
-  offers: [],
-  rejections: [],
+  offers: number[],
+  rejections: number[],
   isActivated: boolean,
 }
 
