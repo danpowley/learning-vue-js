@@ -3,12 +3,16 @@
     <h2>Coach: {{ coach.name }}</h2>
     <div>NOTE: Refreshing the page generates a completely new coach identity.</div>
     <game-finder :my-teams="myTeams" :matchup-data="matchupData"></game-finder>
+
+    <div style="padding-bottom: 800px;">
+      <button @click="addRandomTeam">Add random Team for you ({{ coach.name }})</button> (just a quick cheat so you can have as many teams as you need)
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
-import { Coach, MatchupData, Team, getCoach, getMyTeams } from './fake-fumbbl-api'
+import { Coach, MatchupData, Team, getCoach, getRandomTeam } from './fake-fumbbl-api'
 import GameFinder from './components/GameFinder.vue'
 import axios from 'axios'
 
@@ -36,8 +40,13 @@ export default Vue.extend({
       return activeTeams
     }
   },
+  methods: {
+    addRandomTeam() {
+      this.myTeams.push(getRandomTeam(this.coach.id))
+    }
+  },
   created: function (): void {
-    this.myTeams = getMyTeams(this.coach.id)
+    this.myTeams = [getRandomTeam(this.coach.id)]
 
     // Unusual type hinting on the callback for setInterval, just to suppress warnings.
     setInterval(function (this: { coach: Coach, activeTeams: Team[], matchupData: MatchupData }): void {

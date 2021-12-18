@@ -70,7 +70,7 @@ function getRandomLevel(): string {
   return getRandomArrayElement(levels)
 }
 
-function getRandomTeam(coachId: number): Team {
+export function getRandomTeam(coachId: number): Team {
   return {
     id: getRandomId(),
     coachId: coachId,
@@ -92,14 +92,4 @@ export function getCoach(): Coach {
     name: coachName + getRandomInteger(10000),
     level: getRandomLevel()
   }
-}
-
-export function getMyTeams (coachId: number): Team[] {
-  return [
-    getRandomTeam(coachId),
-    getRandomTeam(coachId),
-    getRandomTeam(coachId),
-    getRandomTeam(coachId),
-    getRandomTeam(coachId),
-  ]
 }
