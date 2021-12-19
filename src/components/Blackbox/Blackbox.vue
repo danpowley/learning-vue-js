@@ -139,13 +139,13 @@ export default Vue.extend({
         })
     },
     displayDate(dateString: string): string {
-      const date = new Date(dateString);
-      const month = date.getMonth().toString().padStart(2, '0')
+      const date = new Date(dateString)
+      const month = (date.getMonth() + 1).toString().padStart(2, '0')
       const dayDate = date.getDate().toString().padStart(2, '0')
       return `${date.getFullYear()}-${month}-${dayDate}`
     },
     displayTime(dateString: string): string {
-      const date = new Date(dateString);
+      const date = new Date(dateString)
       const hour = date.getHours().toString().padStart(2, '0')
       const minute = date.getMinutes().toString().padStart(2, '0')
       return `${hour}:${minute}`
