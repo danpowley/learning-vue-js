@@ -8,11 +8,13 @@
         <div class="panel__header">Blackbox State</div>
         <div class="panel__body">
           <div>
-            <div>Coaches: {{ currentInfo.coachCount }}</div>
-            <div>Teams: {{ currentInfo.teamCount }}</div>
+            <div>
+              Active status: <span :class="{activated: activated, deactivated: !activated}">{{ this.activated ? 'ACTIVE' : 'NOT ACTIVE' }}</span>
+              <span v-show="activated"> ({{ appliedTeamIds.length }} team<span v-show="appliedTeamIds.length > 1">s</span>)</span>
+            </div>
+            <div>Coaches activated: {{ currentInfo.coachCount }}</div>
+            <div>Teams activated: {{ currentInfo.teamCount }}</div>
             <div>Time of next draw: {{ currentInfo.timeOfNextDraw ? displayTime(currentInfo.timeOfNextDraw) : '...' }}</div>
-            <div>You are activated: <span :class="{activated: activated, deactivated: !activated}">{{ this.activated ? 'YES' : 'NO' }}</span></div>
-            <div>Your teams: {{ this.activated ? appliedTeamIds.length : 0 }}</div>
           </div>
           <div class="subheading">Available teams</div>
           <div v-show="!myTeams.length">
@@ -127,10 +129,14 @@ export default Vue.extend({
   },
   methods: {
     activateTeams() {
-      axios.post('http://localhost:3000/blackbox/apply', {coach: this.coach, teams: this.appliedTeams})
+      if (this.appliedTeams.length > 0) {
+        axios.post('http://localhost:3000/blackbox/apply', {coach: this.coach, teams: this.appliedTeams})
         .then(() => {
           this.activated = true
         })
+      } else {
+        alert('Please select at least 1 team to activate.')
+      }
     },
     deactivateTeams() {
       axios.post('http://localhost:3000/blackbox/apply', {coach: this.coach, teams: []})
