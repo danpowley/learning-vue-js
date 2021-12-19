@@ -38,30 +38,25 @@
       </div>
     </div>
     <div class="blackbox-draws">
-      Draws
-      <div>
-        <button @click="getDrawResults">Get draw results</button>
-      </div>
-
       <template v-for="drawResult in drawResults">
         <div :key="drawResult.drawKey" class="panel">
           <div class="panel__header">{{ displayDateAndTime(drawResult.date) }}</div>
           <div class="panel__body">
-            <template v-for="teamPair in drawResult.matches">
-              <div :key="teamPair[0].team.id + '-' + teamPair[1].team.id">
+            <template v-for="blackboxMatch in drawResult.matches">
+              <div :key="blackboxMatch.home.team.id + '-' + blackboxMatch.away.team.id">
                 <div class="match-result-container">
                   <div class="score">
-                    <template v-if="coach.name == teamPair[0].coachName || coach.name == teamPair[1].coachName">
+                    <template v-if="coach.name == blackboxMatch.home.coachName || coach.name == blackboxMatch.away.coachName">
                       <button @click="playGame">Play</button>
                     </template>
                     <template v-else>
                       0-0
                     </template>
                   </div>
-                  <div class="home-team-name">{{ teamPair[0].team.name }}</div>
-                  <div class="home-team-details"><strong>{{ teamPair[0].coachName }}</strong> TV {{ teamPair[0].team.teamValue }}k {{ teamPair[0].team.race }}</div>
-                  <div class="away-team-name">{{ teamPair[1].team.name }}</div>
-                  <div class="away-team-details">{{ teamPair[1].team.race }} TV {{ teamPair[1].team.teamValue }}k <strong>{{ teamPair[1].coachName }}</strong></div>
+                  <div class="home-team-name">{{ blackboxMatch.home.team.name }}</div>
+                  <div class="home-team-details"><strong>{{ blackboxMatch.home.coachName }}</strong> TV {{ blackboxMatch.home.team.teamValue }}k {{ blackboxMatch.home.team.race }}</div>
+                  <div class="away-team-name">{{ blackboxMatch.away.team.name }}</div>
+                  <div class="away-team-details">{{ blackboxMatch.away.team.race }} TV {{ blackboxMatch.away.team.teamValue }}k <strong>{{ blackboxMatch.away.coachName }}</strong></div>
                 </div>
               </div>
             </template>
@@ -86,6 +81,17 @@ interface BlackboxCurrent {
   timeOfNextDraw: Date
 }
 
+interface BlackboxMatch {
+  home: {coachName: string, team: Team},
+  away: {coachName: string, team: Team}
+}
+
+interface BlackboxDrawResult {
+  drawKey: string,
+  date: string,
+  matches: BlackboxMatch[]
+}
+
 export default Vue.extend({
   name: 'Blackbox',
   props: {
@@ -102,9 +108,9 @@ export default Vue.extend({
     return {
       activated: false as boolean,
       appliedTeamIds: [] as number[],
-      drawResults: [],
+      drawResults: [] as BlackboxDrawResult[],
       currentInfo: {} as BlackboxCurrent,
-      pollingIntervalId: undefined as number | undefined,
+      pollingIntervalIds: [] as number[],
     }
   },
   computed: {
@@ -122,20 +128,14 @@ export default Vue.extend({
   methods: {
     activateTeams() {
       axios.post('http://localhost:3000/blackbox/apply', {coach: this.coach, teams: this.appliedTeams})
-        .then((response) => {
+        .then(() => {
           this.activated = true
         })
     },
     deactivateTeams() {
       axios.post('http://localhost:3000/blackbox/apply', {coach: this.coach, teams: []})
-        .then((response) => {
+        .then(() => {
           this.activated = false
-        })
-    },
-    getDrawResults() {
-      axios.get('http://localhost:3000/blackbox/draw-results')
-        .then((response) => {
-          this.drawResults = response.data
         })
     },
     displayDate(dateString: string): string {
@@ -158,15 +158,26 @@ export default Vue.extend({
     }
   },
   created: function (): void {
-    this.pollingIntervalId = setInterval(function (this: {currentInfo: BlackboxCurrent}): void {
+    let pollingIntervalId = setInterval(function (this: {currentInfo: BlackboxCurrent}): void {
       axios.get('http://localhost:3000/blackbox/current')
         .then((response) => {
           this.currentInfo = response.data
         })
     }.bind(this), 10000)
+    this.pollingIntervalIds.push(pollingIntervalId)
+
+    pollingIntervalId = setInterval(function (this: {drawResults: BlackboxDrawResult[]}): void {
+      axios.get('http://localhost:3000/blackbox/draw-results')
+        .then((response) => {
+          this.drawResults = response.data
+        })
+    }.bind(this), 10000)
+    this.pollingIntervalIds.push(pollingIntervalId)
   },
   destroyed: function (): void {
-    clearInterval(this.pollingIntervalId)
+    for (const pollingIntervalId of this.pollingIntervalIds) {
+      clearInterval(pollingIntervalId)
+    }
   }
 });
 </script>
