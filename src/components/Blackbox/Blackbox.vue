@@ -2,37 +2,74 @@
 <div style="margin-bottom: 100px;">
   <h2>Blackbox</h2>
 
-  <div v-show="!myTeams.length" style="font-size: larger;">
-    No teams available: use the demo settings below to add teams.
-  </div>
-
-  <template v-for="team in myTeams">
-    <div :key="team.id">
-      <input type="checkbox" :id="'blackbox-apply-team-' + team.id" v-model="appliedTeamIds" :value="team.id" />
-      <label :for="'blackbox-apply-team-' + team.id">{{ team.name }}</label>
+  <div class="blackbox-container">
+    <div class="blackbox-state">
+      <div class="panel">
+        <div class="panel__header">Blackbox State</div>
+        <div class="panel__body">
+          <div>
+            <div>Coaches: {{ currentInfo.coachCount }}</div>
+            <div>Teams: {{ currentInfo.teamCount }}</div>
+            <div>Time of next draw: {{ currentInfo.timeOfNextDraw ? displayTime(currentInfo.timeOfNextDraw) : '...' }}</div>
+            <div>You are activated: <span :class="{activated: activated, deactivated: !activated}">{{ this.activated ? 'YES' : 'NO' }}</span></div>
+            <div>Your teams: {{ this.activated ? appliedTeamIds.length : 0 }}</div>
+          </div>
+          <div class="subheading">Available teams</div>
+          <div v-show="!myTeams.length">
+            No teams available.
+          </div>
+          <template v-for="team in myTeams">
+            <div :key="team.id">
+              <input type="checkbox" :id="'blackbox-apply-team-' + team.id" v-model="appliedTeamIds" :value="team.id" />
+              <label :for="'blackbox-apply-team-' + team.id">{{ team.name }}</label>
+            </div>
+          </template>
+          <template v-if="myTeams.length">
+            <div>
+              <template v-if="activated">
+                <button @click="deactivateTeams">Deactivate</button>
+              </template>
+              <template v-else>
+                <button @click="activateTeams">Activate</button>
+              </template>
+            </div>
+          </template>
+        </div>
+      </div>
     </div>
-  </template>
+    <div class="blackbox-draws">
+      Draws
+      <div>
+        <button @click="getDrawResults">Get draw results</button>
+      </div>
 
-  <div>
-    <button @click="applyTeams">Apply teams</button>
-  </div>
-
-  <div>
-    <button @click="getDrawResults">Get draw results</button>
-  </div>
-
-  <template v-for="drawResult in drawResults">
-    <div :key="drawResult.drawKey">
-      <h3>{{ drawResult.date }}</h3>
-      <template v-for="teamPair in drawResult.matches">
-        <div :key="teamPair[0].id + '-' + teamPair[1].id">
-          <div>{{ teamPair[0] }}</div>
-          v's
-          <div>{{ teamPair[1] }}</div>
+      <template v-for="drawResult in drawResults">
+        <div :key="drawResult.drawKey" class="panel">
+          <div class="panel__header">{{ displayDateAndTime(drawResult.date) }}</div>
+          <div class="panel__body">
+            <template v-for="teamPair in drawResult.matches">
+              <div :key="teamPair[0].team.id + '-' + teamPair[1].team.id">
+                <div class="match-result-container">
+                  <div class="score">
+                    <template v-if="coach.name == teamPair[0].coachName || coach.name == teamPair[1].coachName">
+                      <button @click="playGame">Play</button>
+                    </template>
+                    <template v-else>
+                      0-0
+                    </template>
+                  </div>
+                  <div class="home-team-name">{{ teamPair[0].team.name }}</div>
+                  <div class="home-team-details"><strong>{{ teamPair[0].coachName }}</strong> TV {{ teamPair[0].team.teamValue }}k {{ teamPair[0].team.race }}</div>
+                  <div class="away-team-name">{{ teamPair[1].team.name }}</div>
+                  <div class="away-team-details">{{ teamPair[1].team.race }} TV {{ teamPair[1].team.teamValue }}k <strong>{{ teamPair[1].coachName }}</strong></div>
+                </div>
+              </div>
+            </template>
+          </div>
         </div>
       </template>
     </div>
-  </template>
+  </div>
 
 </div>
 </template>
@@ -42,6 +79,12 @@ import Vue from 'vue';
 import { PropType } from 'vue';
 import axios from 'axios'
 import { Team, Coach } from '@/fake-fumbbl-api'
+
+interface BlackboxCurrent {
+  coachCount: number,
+  teamCount: number,
+  timeOfNextDraw: Date
+}
 
 export default Vue.extend({
   name: 'Blackbox',
@@ -57,8 +100,11 @@ export default Vue.extend({
   },
   data() {
     return {
+      activated: false as boolean,
       appliedTeamIds: [] as number[],
-      drawResults: []
+      drawResults: [],
+      currentInfo: {} as BlackboxCurrent,
+      pollingIntervalId: undefined as number | undefined,
     }
   },
   computed: {
@@ -74,10 +120,16 @@ export default Vue.extend({
     }
   },
   methods: {
-    applyTeams() {
+    activateTeams() {
       axios.post('http://localhost:3000/blackbox/apply', {coach: this.coach, teams: this.appliedTeams})
         .then((response) => {
-          console.log(response.data)
+          this.activated = true
+        })
+    },
+    deactivateTeams() {
+      axios.post('http://localhost:3000/blackbox/apply', {coach: this.coach, teams: []})
+        .then((response) => {
+          this.activated = false
         })
     },
     getDrawResults() {
@@ -85,10 +137,108 @@ export default Vue.extend({
         .then((response) => {
           this.drawResults = response.data
         })
+    },
+    displayDate(dateString: string): string {
+      const date = new Date(dateString);
+      const month = date.getMonth().toString().padStart(2, '0')
+      const dayDate = date.getDate().toString().padStart(2, '0')
+      return `${date.getFullYear()}-${month}-${dayDate}`
+    },
+    displayTime(dateString: string): string {
+      const date = new Date(dateString);
+      const hour = date.getHours().toString().padStart(2, '0')
+      const minute = date.getMinutes().toString().padStart(2, '0')
+      return `${hour}:${minute}`
+    },
+    displayDateAndTime(dateString: string): string {
+      return `${this.displayDate(dateString)} ${this.displayTime(dateString)}`
+    },
+    playGame() {
+      alert('Sorry, this doesn\'t work yet.')
     }
+  },
+  created: function (): void {
+    this.pollingIntervalId = setInterval(function (this: {currentInfo: BlackboxCurrent}): void {
+      axios.get('http://localhost:3000/blackbox/current')
+        .then((response) => {
+          this.currentInfo = response.data
+        })
+    }.bind(this), 10000)
+  },
+  destroyed: function (): void {
+    clearInterval(this.pollingIntervalId)
   }
 });
 </script>
 
 <style scoped>
+.blackbox-container {
+  display: grid;
+  grid-template-columns: 0.6fr 1.4fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-template-areas:
+    "blackbox-state blackbox-draws";
+}
+.blackbox-state {
+  grid-area: blackbox-state;
+  margin-right: 20px;
+}
+.blackbox-draws {
+  grid-area: blackbox-draws;
+}
+
+.panel {
+  margin-bottom: 20px;
+}
+
+.panel__header {
+  background-color: #242;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  color: white;
+  padding: 5px;
+  text-align: center;
+  font-size: larger;
+}
+
+.panel__body {
+  background-color: #f8f5e7;
+  padding: 10px;
+}
+
+.subheading {
+  margin-top: 10px;
+  font-size: larger;
+}
+
+.activated {
+  color: green;
+  font-weight: bold;
+}
+
+.deactivated {
+  color: red;
+  font-weight: bold;
+}
+
+.match-result-container {
+  display: grid;
+  grid-template-columns: 3fr 1fr 3fr;
+  grid-template-rows: 1.2fr 0.8fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "home-team-name score away-team-name"
+    "home-team-details score away-team-details";
+}
+
+.home-icon { grid-area: home-icon; }
+.away-icon { grid-area: away-icon; }
+.score { grid-area: score; text-align: center; font-size: x-large; }
+.home-team-name { grid-area: home-team-name;  text-align: right; font-size: large; }
+.home-team-details { grid-area: home-team-details; text-align: right; }
+.away-team-name { grid-area: away-team-name; text-align: left; font-size: large; }
+.away-team-details { grid-area: away-team-details; text-align: left; }
+
 </style>
