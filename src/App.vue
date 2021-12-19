@@ -1,53 +1,33 @@
 <template>
   <div>
-    <template v-if="isLoggedIn()">
-      <div style="float: right; font-size: 16pt">Coach: {{ coach.name }} ({{ coach.level }})</div>
+    <template v-if="!isLoggedIn()">
+      <h4>Log in to the demo (just type any made up coach name)</h4>
+      <p>Every tab you open can be a different coach to allow testing making match ups via Blackbox or Game Finder.
+      <div>
+        <div style="margin-bottom: 10px; font-size: large;">
+          <label for="newCoachName">Coach name: </label><input v-model="newCoachName" type="text" id="newCoachName">
+          <button @click="logIn">Start (log in)</button>
+        </div>
+      </div>
+    </template>
+    <template v-else>
+      <div style="float: right; font-size: 16pt">
+        Coach: {{ coach.name }} ({{ coach.level }})
+        <button @click="logOut">Log out</button>
+      </div>
       <div style="margin-top: 20px;">
         Choose mode:
         <button @click="setSearchModeGameFinder()">Game finder</button>
         <button @click="setSearchModeBlackbox()">Blackbox</button>
+        | <button @click="addRandomTeam">Generate team</button>
       </div>
-
-      <template v-if="isSearchModeGameFinder">
-        <game-finder :coach="coach" :my-teams="myTeams"></game-finder>
-      </template>
-      <template v-if="isSearchModeBlackBox">
-        <blackbox :coach="coach" :my-teams="myTeams"></blackbox>
-      </template>
-    </template>
-    <template v-else>
-      <h2>Welcome to the demo</h2>
-      <ul>
-        <li>Choose a coach name below to simulate logging in.</li>
-        <li>Use the generate team button to add 1 or more teams to use for finding games.</li>
-        <li>Open another tab to log in as another coach, try to arrange games between tabs.</li>
-      </ul>
     </template>
 
-    <hr>
-
-    <h3>Demo settings:</h3>
-    <h4>Set Coach (fake sign in)</h4>
-    <div>
-      <div style="margin-bottom: 10px;">
-        <label for="newCoachName">Coach name: </label><input v-model="newCoachName" type="text" id="newCoachName">
-        (any name is fine)
-      </div>
-      <button @click="changeCoach">Set Coach (fake sign in)</button> (just a quick cheat to simulate a login, <strong>this will also reset the demo</strong>).
-    </div>
-
-    <h4>Add teams</h4>
-    <div>
-      <button @click="addRandomTeam">Generate team</button> (just a quick cheat so you can have as many teams as you need)
-    </div>
-
-    <template v-if="isLoggedIn()">
-      <h4>General demo info</h4>
-      <ul>
-        <li>Choose a coach name above to simulate logging in.</li>
-        <li>Use the generate team button to add 1 or more teams to use for finding games.</li>
-        <li>Open another tab to log in as another coach, try to arrange games between tabs.</li>
-      </ul>
+    <template v-if="isSearchModeGameFinder">
+      <game-finder :coach="coach" :my-teams="myTeams"></game-finder>
+    </template>
+    <template v-if="isSearchModeBlackBox">
+      <blackbox :coach="coach" :my-teams="myTeams"></blackbox>
     </template>
 
     <div style="padding-bottom: 800px;"></div>
@@ -56,7 +36,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Team, getCoach, getRandomTeam } from '@/fake-fumbbl-api'
+import { Coach, Team, getCoach, getRandomTeam } from '@/fake-fumbbl-api'
 import GameFinder from '@/components/GameFinder/GameFinder.vue'
 import Blackbox from '@/components/Blackbox/Blackbox.vue'
 
@@ -68,8 +48,8 @@ export default Vue.extend({
   },
   data() {
     return {
-      searchMode: 'GAME_FINDER',
-      coach: {id: 0, name: 'Please choose coach name below', 'level': 'Rookie'},
+      searchMode: 'LOGGED_OUT',
+      coach: null as Coach | null,
       newCoachName: '',
       myTeams: [] as Team[]
     }
@@ -84,22 +64,31 @@ export default Vue.extend({
   },
   methods: {
     isLoggedIn() {
-      return this.coach.id !== 0
+      return this.searchMode !== 'LOGGED_OUT'
     },
     addRandomTeam() {
-      if (this.isLoggedIn()) {
+      if (this.coach) {
         this.myTeams.push(getRandomTeam(this.coach.id))
-      } else {
-        alert('Please choose a coach name before you try to add a team')
       }
     },
-    changeCoach() {
+    logIn() {
       if (this.newCoachName) {
         this.coach = getCoach(this.newCoachName)
         this.myTeams = []
+        this.myTeams.push(getRandomTeam(this.coach.id))
+        this.myTeams.push(getRandomTeam(this.coach.id))
+        this.myTeams.push(getRandomTeam(this.coach.id))
+        this.searchMode = 'GAME_FINDER'
+        this.newCoachName = ''
       } else {
-        alert('Sorry, can\'t be blank.')
+        alert('Sorry, coach name can\'t be blank.')
       }
+    },
+    logOut() {
+      this.coach = null
+      this.myTeams = []
+      this.searchMode = 'LOGGED_OUT'
+      this.newCoachName = ''
     },
     setSearchModeGameFinder() {
       this.searchMode = 'GAME_FINDER'
