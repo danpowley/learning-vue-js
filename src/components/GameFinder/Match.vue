@@ -38,7 +38,9 @@
 </template>
 
 <script lang="ts">
+import { Matchup } from '@/fake-fumbbl-api';
 import Vue from 'vue';
+import { PropType } from 'vue';
 
 interface MatchClassObject {
   matchupOffered: boolean,
@@ -50,7 +52,10 @@ interface MatchClassObject {
 export default Vue.extend({
   name: 'Match',
   props: {
-    matchup: Object
+    matchup: {
+      type: Object as PropType<Matchup>,
+      required: true
+    }
   },
   computed: {
     matchupKey (): string {

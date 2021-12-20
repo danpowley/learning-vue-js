@@ -5,8 +5,8 @@ export interface Team {
   race: string,
   teamValue: number,
   division: string,
-  offers: [],
-  rejections: [],
+  offers: number[],
+  rejections: number[],
   isActivated: boolean,
 }
 
@@ -66,11 +66,11 @@ function getRandomTeamName(): string {
 }
 
 function getRandomLevel(): string {
-  const levels = ['Veteran', 'Experienced', 'Emerging Star', 'Star', 'Super Star', 'Legend']
+  const levels = ['Rookie', 'Veteran', 'Experienced', 'Emerging Star', 'Star', 'Super Star', 'Legend']
   return getRandomArrayElement(levels)
 }
 
-function getRandomTeam(coachId: number): Team {
+export function getRandomTeam(coachId: number): Team {
   return {
     id: getRandomId(),
     coachId: coachId,
@@ -84,22 +84,10 @@ function getRandomTeam(coachId: number): Team {
   }
 }
 
-export function getCoach(): Coach {
-  const words = ['weird', 'purple', 'sour', 'bog', 'paper', 'bird', 'man', 'fish', 'click', 'crack', 'static', 'funk', 'bot', 'trick', 'proud']
-  const coachName = `${getRandomArrayElement(words)}${getRandomArrayElement(words)}`
+export function getCoach(coachName: string): Coach {
   return {
     id: getRandomId(),
-    name: coachName + getRandomInteger(10000),
+    name: coachName,
     level: getRandomLevel()
   }
-}
-
-export function getMyTeams (coachId: number): Team[] {
-  return [
-    getRandomTeam(coachId),
-    getRandomTeam(coachId),
-    getRandomTeam(coachId),
-    getRandomTeam(coachId),
-    getRandomTeam(coachId),
-  ]
 }
