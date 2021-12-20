@@ -149,7 +149,7 @@ export default Vue.extend({
         axios.post('http://localhost:3000/blackbox/activate', {coach: this.coach, teams: this.appliedTeams})
         .then((response) => {
           this.activated = response.data
-          this.updateFromApi()
+          this.updateCurrentInfoAndDrawResults()
         })
       } else {
         alert('Please select at least 1 team to activate.')
@@ -159,7 +159,7 @@ export default Vue.extend({
       axios.post('http://localhost:3000/blackbox/deactivate', {coach: this.coach})
         .then(() => {
           this.activated = null
-          this.updateFromApi()
+          this.updateCurrentInfoAndDrawResults()
         })
     },
     displayDate(dateString: string): string {
@@ -180,7 +180,7 @@ export default Vue.extend({
     playGame() {
       alert('Sorry, this doesn\'t work yet.')
     },
-    updateFromApi(): void {
+    updateCurrentInfoAndDrawResults(): void {
       axios.get('http://localhost:3000/blackbox/latest')
         .then((response) => {
           this.currentInfo = response.data.currentInfo
@@ -189,8 +189,8 @@ export default Vue.extend({
     }
   },
   created: function (): void {
-    this.updateFromApi()
-    this.pollingIntervalId = setInterval(this.updateFromApi, 5000)
+    this.updateCurrentInfoAndDrawResults()
+    this.pollingIntervalId = setInterval(this.updateCurrentInfoAndDrawResults, 5000)
   },
   destroyed: function (): void {
     if (this.pollingIntervalId) {
