@@ -6,15 +6,20 @@
     <div class="blackbox-state">
       <div class="panel">
         <div class="panel__header">Blackbox State</div>
-        <div class="panel__body">
+        <div class="panel__body blackbox-current-info">
           <div>
             <div>
-              Active status: <span :class="{activated: activated, deactivated: !activated}">{{ this.activated ? 'ACTIVE' : 'NOT ACTIVE' }}</span>
-              <span v-show="activated"> ({{ appliedTeamIds.length }} team<span v-show="appliedTeamIds.length > 1">s</span>)</span>
+              <template v-if="isActivated">
+                Active status: <span class="activated">ACTIVE</span> ({{ activated.teamCount }} team<span v-show="activated.teamCount > 1">s</span>)
+              </template>
+              <template v-else>
+                Active status: <span class="deactivated">NOT ACTIVE</span>
+              </template>
             </div>
             <div>Coaches activated: {{ currentInfo.coachCount }}</div>
             <div>Teams activated: {{ currentInfo.teamCount }}</div>
             <div>Time of next draw: {{ currentInfo.timeOfNextDraw ? displayTime(currentInfo.timeOfNextDraw) : '...' }}</div>
+            <div>Draw ID: {{ currentInfo.drawId }}</div>
           </div>
           <div class="subheading">Available teams</div>
           <div v-show="!myTeams.length">
@@ -28,11 +33,9 @@
           </template>
           <template v-if="myTeams.length">
             <div>
-              <template v-if="activated">
-                <button @click="deactivateTeams">Deactivate</button>
-              </template>
-              <template v-else>
-                <button @click="activateTeams">Activate</button>
+              <button @click="activateTeams">{{ isActivated ? 'Change teams' : 'Activate teams' }}</button>
+              <template v-if="isActivated">
+                <button @click="deactivateTeams" style="float: right;">Deactivate</button>
               </template>
             </div>
           </template>
@@ -78,9 +81,15 @@ import axios from 'axios'
 import { Team, Coach } from '@/fake-fumbbl-api'
 
 interface BlackboxCurrent {
+  drawId: number,
   coachCount: number,
   teamCount: number,
   timeOfNextDraw: Date
+}
+
+interface BlackboxActivation {
+  drawId: number,
+  teamCount: number
 }
 
 interface BlackboxMatch {
@@ -108,14 +117,21 @@ export default Vue.extend({
   },
   data() {
     return {
-      activated: false as boolean,
+      activated: null as BlackboxActivation | null,
       appliedTeamIds: [] as number[],
       drawResults: [] as BlackboxDrawResult[],
       currentInfo: {} as BlackboxCurrent,
-      pollingIntervalIds: [] as number[],
+      pollingIntervalId: null as number | null,
     }
   },
   computed: {
+    isActivated (): boolean {
+      if (this.activated === null) {
+        return false
+      }
+
+      return this.activated.drawId === this.currentInfo.drawId
+    },
     appliedTeams (): Team[] {
       const appliedTeams: Team[] = []
       for (const team of this.myTeams) {
@@ -130,18 +146,20 @@ export default Vue.extend({
   methods: {
     activateTeams() {
       if (this.appliedTeams.length > 0) {
-        axios.post('http://localhost:3000/blackbox/apply', {coach: this.coach, teams: this.appliedTeams})
-        .then(() => {
-          this.activated = true
+        axios.post('http://localhost:3000/blackbox/activate', {coach: this.coach, teams: this.appliedTeams})
+        .then((response) => {
+          this.activated = response.data
+          this.updateFromApi()
         })
       } else {
         alert('Please select at least 1 team to activate.')
       }
     },
     deactivateTeams() {
-      axios.post('http://localhost:3000/blackbox/apply', {coach: this.coach, teams: []})
+      axios.post('http://localhost:3000/blackbox/deactivate', {coach: this.coach})
         .then(() => {
-          this.activated = false
+          this.activated = null
+          this.updateFromApi()
         })
     },
     displayDate(dateString: string): string {
@@ -161,28 +179,22 @@ export default Vue.extend({
     },
     playGame() {
       alert('Sorry, this doesn\'t work yet.')
+    },
+    updateFromApi(): void {
+      axios.get('http://localhost:3000/blackbox/latest')
+        .then((response) => {
+          this.currentInfo = response.data.currentInfo
+          this.drawResults = response.data.drawResults
+        })
     }
   },
   created: function (): void {
-    let pollingIntervalId = setInterval(function (this: {currentInfo: BlackboxCurrent}): void {
-      axios.get('http://localhost:3000/blackbox/current')
-        .then((response) => {
-          this.currentInfo = response.data
-        })
-    }.bind(this), 10000)
-    this.pollingIntervalIds.push(pollingIntervalId)
-
-    pollingIntervalId = setInterval(function (this: {drawResults: BlackboxDrawResult[]}): void {
-      axios.get('http://localhost:3000/blackbox/draw-results')
-        .then((response) => {
-          this.drawResults = response.data
-        })
-    }.bind(this), 10000)
-    this.pollingIntervalIds.push(pollingIntervalId)
+    this.updateFromApi()
+    this.pollingIntervalId = setInterval(this.updateFromApi, 5000)
   },
   destroyed: function (): void {
-    for (const pollingIntervalId of this.pollingIntervalIds) {
-      clearInterval(pollingIntervalId)
+    if (this.pollingIntervalId) {
+      clearInterval(this.pollingIntervalId)
     }
   }
 });
@@ -197,10 +209,12 @@ export default Vue.extend({
   grid-template-areas:
     "blackbox-state blackbox-draws";
 }
+
 .blackbox-state {
   grid-area: blackbox-state;
   margin-right: 20px;
 }
+
 .blackbox-draws {
   grid-area: blackbox-draws;
 }
@@ -221,6 +235,9 @@ export default Vue.extend({
 
 .panel__body {
   background-color: #f8f5e7;
+}
+
+.blackbox-current-info {
   padding: 10px;
 }
 
@@ -248,6 +265,8 @@ export default Vue.extend({
   grid-template-areas:
     "home-team-name score away-team-name"
     "home-team-details score away-team-details";
+  border-bottom: solid black 1px;
+  padding: 3px 0;
 }
 
 .home-icon { grid-area: home-icon; }
