@@ -6,8 +6,7 @@ export interface Team {
   teamValue: number,
   division: string,
   offers: number[],
-  rejections: number[],
-  isActivated: boolean,
+  rejections: number[]
 }
 
 export interface Coach {
@@ -24,12 +23,15 @@ export interface MatchupData {
 export type MatchupStatus = 'AVAILABLE' | 'OFFERED' | 'OPPONENT_OFFERED' | 'REJECTED' | 'PLAY'
 
 export interface Matchup {
-  myTeamId: number,
-  opponentTeamId: number,
-  name: string,
-  race: string,
-  coachDetails: Coach[],
-  teamValue: number,
+  matchupKey: string,
+  myTeam: {
+    coach: Coach,
+    team: Team
+  },
+  opponentTeam: {
+    coach: Coach,
+    team: Team
+  },
   matchupStatus: MatchupStatus
 }
 
@@ -55,11 +57,6 @@ function getRandomDivision(): string {
   return getRandomArrayElement(divisions)
 }
 
-function getRandomBoolean(): boolean {
-  const booleans = [true, false]
-  return getRandomArrayElement(booleans)
-}
-
 function getRandomTeamName(): string {
   const words = ['Amazing', 'Beak', 'Lamp', 'Warriors', 'North', 'Green', 'Vicious', 'Triple', 'Iron', 'Golden', 'Bright', 'Dark', 'Fearless', 'Lightning']
   return `${getRandomArrayElement(words)} ${getRandomArrayElement(words)} ${getRandomArrayElement(words)}`
@@ -78,7 +75,6 @@ export function getRandomTeam(coachId: number): Team {
     race: getRandomRace(),
     teamValue: (getRandomInteger(20) * 100) + 700,
     division: getRandomDivision(),
-    isActivated: getRandomBoolean(),
     offers: [],
     rejections: []
   }
