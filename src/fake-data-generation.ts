@@ -41,9 +41,7 @@ export function getRandomTeam(coachId: number): Team {
     name: getRandomTeamName(),
     race: getRandomRace(),
     teamValue: (getRandomInteger(20) * 100) + 700,
-    division: getRandomDivision(),
-    offers: [],
-    rejections: []
+    division: getRandomDivision()
   }
 }
 

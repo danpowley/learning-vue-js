@@ -50,7 +50,7 @@ import { PropType } from 'vue';
 import axios from 'axios'
 import MatchComponent from '@/components/GameFinder/Match.vue'
 import { Team, Coach } from '@/interfaces'
-import { Matchup, MatchupStatus, MatchupData } from '@/components/GameFinder/interfaces'
+import { Matchup, MatchupStatus, TeamIdPair, GameFinderCoachRequest } from '@/components/GameFinder/interfaces'
 
 export default Vue.extend({
   name: 'GameFinder',
@@ -69,8 +69,10 @@ export default Vue.extend({
   },
   data() {
     return {
-      matchupData: {teams: [], coaches: []} as MatchupData,
+      opponentGameFinderCoachRequests: [] as GameFinderCoachRequest[],
       appliedTeamIds: [] as number[],
+      offers: [] as TeamIdPair[],
+      rejections: [] as TeamIdPair[],
       pollingIntervalId: undefined as number | undefined,
     }
   },
@@ -85,54 +87,89 @@ export default Vue.extend({
 
       return appliedTeams
     },
-    availableMatchups (): Matchup[] {
-      const matchups = []
-      const coachIdLookup = new Map()
+    gameFinderCoachRequest (): GameFinderCoachRequest {
+      const gameFinderTeams = []
+      for (const team of this.appliedTeams) {
 
-      for (const coach of this.matchupData.coaches) {
-        coachIdLookup.set(coach.id, coach)
+        const offers = []
+        for (const teamPairId of this.offers) {
+          if (team.id === teamPairId.myTeamId) {
+            offers.push(teamPairId.opponentTeamId)
+          }
+        }
+
+        const rejections = []
+        for (const teamPairId of this.rejections) {
+          if (team.id === teamPairId.myTeamId) {
+            rejections.push(teamPairId.opponentTeamId)
+          }
+        }
+
+        gameFinderTeams.push({
+          team: team,
+          offers: offers,
+          rejections: rejections
+        })
       }
 
-      for (const matchupTeam of this.matchupData.teams) {
-        for (const myTeam of this.appliedTeams) {
+      return {
+        coach: this.coach,
+        teams: gameFinderTeams,
+        settings: {
+          race: {
+            allowMirrors: false,
+            allowedRaces: []
+          },
+          teamValueDifference: 200,
+          coachLevels: []
+        }
+      }
+    },
+    availableMatchups (): Matchup[] {
+      const matchups = [] as Matchup[]
+      const gameFinderCoachRequest = this.gameFinderCoachRequest
 
-          let matchupStatus: MatchupStatus = 'AVAILABLE'
+      for (const opponentGameFinderCoachRequest of this.opponentGameFinderCoachRequests) {
+        for (const opponentGameFinderTeam of opponentGameFinderCoachRequest.teams) {
+          for (const myGameFinderTeam of gameFinderCoachRequest.teams) {
 
-          const theyOffered = matchupTeam.offers.includes(myTeam.id)
-          const theyRejected = matchupTeam.rejections.includes(myTeam.id)
-          const weOffered = myTeam.offers.includes(matchupTeam.id)
-          const weRejected = myTeam.rejections.includes(matchupTeam.id)
+            let matchupStatus: MatchupStatus = 'AVAILABLE'
 
-          if (theyRejected) {
-            this.clearValueFromArray(myTeam.offers, matchupTeam.id)
-            this.clearValueFromArray(myTeam.rejections, matchupTeam.id)
-            continue
+            const theyOffered = opponentGameFinderTeam.offers.includes(myGameFinderTeam.team.id)
+            const theyRejected = opponentGameFinderTeam.rejections.includes(myGameFinderTeam.team.id)
+            const weOffered = myGameFinderTeam.offers.includes(opponentGameFinderTeam.team.id)
+            const weRejected = myGameFinderTeam.rejections.includes(opponentGameFinderTeam.team.id)
+
+            if (theyRejected) {
+              this.clearOffersAndRejections({myTeamId: myGameFinderTeam.team.id, opponentTeamId: opponentGameFinderTeam.team.id})
+              continue
+            }
+
+            if (weOffered && theyOffered) {
+              matchupStatus = 'PLAY'
+            } else if (weOffered) {
+              matchupStatus = 'OFFERED'
+            } else if (weRejected) {
+              matchupStatus = 'REJECTED'
+            } else if (theyOffered) {
+              matchupStatus = 'OPPONENT_OFFERED'
+            }
+
+            const matchup: Matchup = {
+              matchupKey: `${myGameFinderTeam.team.id}-${opponentGameFinderTeam.team.id}`,
+              myTeam: {
+                team: myGameFinderTeam.team,
+                coach: gameFinderCoachRequest.coach
+              },
+              opponentTeam: {
+                team: opponentGameFinderTeam.team,
+                coach: opponentGameFinderCoachRequest.coach
+              },
+              matchupStatus: matchupStatus,
+            }
+
+            matchups.push(matchup)
           }
-
-          if (weOffered && theyOffered) {
-            matchupStatus = 'PLAY'
-          } else if (weOffered) {
-            matchupStatus = 'OFFERED'
-          } else if (weRejected) {
-            matchupStatus = 'REJECTED'
-          } else if (theyOffered) {
-            matchupStatus = 'OPPONENT_OFFERED'
-          }
-
-          const matchup: Matchup = {
-            matchupKey: `${myTeam.id}-${matchupTeam.id}`,
-            myTeam: {
-              team: myTeam,
-              coach: this.coach
-            },
-            opponentTeam: {
-              team: matchupTeam,
-              coach: coachIdLookup.get(matchupTeam.coachId)
-            },
-            matchupStatus: matchupStatus,
-          }
-
-          matchups.push(matchup)
         }
       }
 
@@ -148,41 +185,34 @@ export default Vue.extend({
       }
       return null
     },
-    clearValueFromArray (array: number[], value: number): void {
-      const index = array.indexOf(value)
+    clearOffersAndRejections (teamIdPair: TeamIdPair): void {
+      let index = this.offers.findIndex((x) => x.myTeamId === teamIdPair.myTeamId && x.opponentTeamId  === teamIdPair.opponentTeamId)
       if (index > -1) {
-        array.splice(index, 1)
+        this.offers.splice(index, 1)
+      }
+
+      index = this.rejections.findIndex((x) => x.myTeamId === teamIdPair.myTeamId && x.opponentTeamId  === teamIdPair.opponentTeamId)
+      if (index > -1) {
+        this.rejections.splice(index, 1)
       }
     },
-    offerMatchup (myTeamId: number, opponentTeamId: number) {
-      const myTeam = this.findMyTeam(myTeamId)
-      if (myTeam) {
-        this.clearValueFromArray(myTeam.offers, opponentTeamId)
-        this.clearValueFromArray(myTeam.rejections, opponentTeamId)
-        myTeam.offers.push(opponentTeamId)
-      }
+    offerMatchup (teamIdPair: TeamIdPair) {
+      this.clearOffersAndRejections(teamIdPair)
+      this.offers.push(teamIdPair)
     },
-    rejectMatchup (myTeamId: number, opponentTeamId: number) {
-      const myTeam = this.findMyTeam(myTeamId)
-      if (myTeam) {
-        this.clearValueFromArray(myTeam.offers, opponentTeamId)
-        this.clearValueFromArray(myTeam.rejections, opponentTeamId)
-        myTeam.rejections.push(opponentTeamId)
-      }
+    rejectMatchup (teamIdPair: TeamIdPair) {
+      this.clearOffersAndRejections(teamIdPair)
+      this.rejections.push(teamIdPair)
     },
-    availableMatchup (myTeamId: number, opponentTeamId: number) {
-      const myTeam = this.findMyTeam(myTeamId)
-      if (myTeam) {
-        this.clearValueFromArray(myTeam.offers, opponentTeamId)
-        this.clearValueFromArray(myTeam.rejections, opponentTeamId)
-      }
+    availableMatchup (teamIdPair: TeamIdPair) {
+      this.clearOffersAndRejections(teamIdPair)
     }
   },
   created: function (): void {
-    this.pollingIntervalId = setInterval(function (this: { coach: Coach, appliedTeams: Team[], matchupData: MatchupData }): void {
-      axios.post('http://localhost:3000/game-finder/apply', {coach: this.coach, teams: this.appliedTeams})
+    this.pollingIntervalId = setInterval(function (this: { gameFinderCoachRequest: GameFinderCoachRequest, opponentGameFinderCoachRequests: GameFinderCoachRequest[] }): void {
+      axios.post('http://localhost:3000/game-finder/apply', this.gameFinderCoachRequest)
         .then((response) => {
-          this.matchupData = response.data
+          this.opponentGameFinderCoachRequests = response.data
         })
     }.bind(this), 2000)
   },

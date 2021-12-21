@@ -4,9 +4,7 @@ export interface Team {
   name: string,
   race: string,
   teamValue: number,
-  division: string,
-  offers: number[],
-  rejections: number[]
+  division: string
 }
 
 export interface Coach {

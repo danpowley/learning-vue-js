@@ -1,10 +1,5 @@
 import { Team, Coach } from '@/interfaces'
 
-export interface MatchupData {
-  teams: Team[],
-  coaches: Coach[]
-}
-
 export type MatchupStatus = 'AVAILABLE' | 'OFFERED' | 'OPPONENT_OFFERED' | 'REJECTED' | 'PLAY'
 
 export interface Matchup {
@@ -18,4 +13,28 @@ export interface Matchup {
     team: Team
   },
   matchupStatus: MatchupStatus
+}
+
+export interface TeamIdPair {
+  myTeamId: number,
+  opponentTeamId: number
+}
+
+export interface GameFinderTeam {
+  team: Team,
+  offers: number[],
+  rejections: number[]
+}
+
+export interface GameFinderCoachRequest {
+  coach: Coach,
+  teams: GameFinderTeam[],
+  settings: {
+    race: {
+      allowMirrors: boolean,
+      allowedRaces: string[]
+    },
+    teamValueDifference: number,
+    coachLevels: string[]
+  }
 }

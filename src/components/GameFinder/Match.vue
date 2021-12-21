@@ -111,13 +111,25 @@ export default Vue.extend({
       alert('Sorry, we haven\'t quite got round to this bit!')
     },
     offerMatchup () {
-      this.$emit('offer-matchup', this.matchup.myTeam.team.id, this.matchup.opponentTeam.team.id)
+      const teamIdPair = {
+        myTeamId: this.matchup.myTeam.team.id,
+        opponentTeamId: this.matchup.opponentTeam.team.id
+      }
+      this.$emit('offer-matchup', teamIdPair)
     },
     rejectMatchup () {
-      this.$emit('reject-matchup', this.matchup.myTeam.team.id, this.matchup.opponentTeam.team.id)
+      const teamIdPair = {
+        myTeamId: this.matchup.myTeam.team.id,
+        opponentTeamId: this.matchup.opponentTeam.team.id
+      }
+      this.$emit('reject-matchup', teamIdPair)
     },
     availableMatchup () {
-      this.$emit('available-matchup', this.matchup.myTeam.team.id, this.matchup.opponentTeam.team.id)
+      const teamIdPair = {
+        myTeamId: this.matchup.myTeam.team.id,
+        opponentTeamId: this.matchup.opponentTeam.team.id
+      }
+      this.$emit('available-matchup', teamIdPair)
     }
   }
 });
