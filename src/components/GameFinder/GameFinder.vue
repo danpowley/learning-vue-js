@@ -49,7 +49,8 @@ import Vue from 'vue';
 import { PropType } from 'vue';
 import axios from 'axios'
 import MatchComponent from '@/components/GameFinder/Match.vue'
-import { Team, Coach, Matchup, MatchupStatus, MatchupData } from '@/fake-fumbbl-api'
+import { Team, Coach } from '@/interfaces'
+import { Matchup, MatchupStatus, MatchupData } from '@/components/GameFinder/interfaces'
 
 export default Vue.extend({
   name: 'GameFinder',

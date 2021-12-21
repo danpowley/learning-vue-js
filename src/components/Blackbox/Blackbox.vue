@@ -91,30 +91,8 @@
 import Vue from 'vue';
 import { PropType } from 'vue';
 import axios from 'axios'
-import { Team, Coach } from '@/fake-fumbbl-api'
-
-interface BlackboxCurrent {
-  drawId: number,
-  coachCount: number,
-  teamCount: number,
-  timeOfNextDraw: Date
-}
-
-interface BlackboxActivation {
-  drawId: number,
-  teamCount: number
-}
-
-interface BlackboxMatch {
-  home: {coachName: string, team: Team},
-  away: {coachName: string, team: Team}
-}
-
-interface BlackboxDrawResult {
-  drawKey: string,
-  date: string,
-  matches: BlackboxMatch[]
-}
+import { Team, Coach } from '@/interfaces'
+import { BlackboxActivation, BlackboxDrawResult, BlackboxCurrent } from '@/components/Blackbox/interfaces'
 
 export default Vue.extend({
   name: 'Blackbox',

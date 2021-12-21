@@ -47,7 +47,7 @@
 </template>
 
 <script lang="ts">
-import { Matchup } from '@/fake-fumbbl-api';
+import { Matchup } from '@/components/GameFinder/interfaces';
 import Vue from 'vue';
 import { PropType } from 'vue';
 

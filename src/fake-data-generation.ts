@@ -1,41 +1,6 @@
 import randomWords from 'random-words'
 
-export interface Team {
-  id: number,
-  coachId: number,
-  name: string,
-  race: string,
-  teamValue: number,
-  division: string,
-  offers: number[],
-  rejections: number[]
-}
-
-export interface Coach {
-  id: number,
-  name: string,
-  level: string
-}
-
-export interface MatchupData {
-  teams: Team[],
-  coaches: Coach[]
-}
-
-export type MatchupStatus = 'AVAILABLE' | 'OFFERED' | 'OPPONENT_OFFERED' | 'REJECTED' | 'PLAY'
-
-export interface Matchup {
-  matchupKey: string,
-  myTeam: {
-    coach: Coach,
-    team: Team
-  },
-  opponentTeam: {
-    coach: Coach,
-    team: Team
-  },
-  matchupStatus: MatchupStatus
-}
+import { Team, Coach } from '@/interfaces'
 
 function getRandomInteger(max: number): number {
   return Math.floor(Math.random() * max)

@@ -36,7 +36,8 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { Coach, Team, getCoach, getRandomTeam } from '@/fake-fumbbl-api'
+import { Coach, Team } from '@/interfaces'
+import { getCoach, getRandomTeam } from '@/fake-data-generation'
 import GameFinder from '@/components/GameFinder/GameFinder.vue'
 import Blackbox from '@/components/Blackbox/Blackbox.vue'
 
