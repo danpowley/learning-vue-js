@@ -32,9 +32,12 @@ function getRandomTeamName(): string {
   return randomName[0].toUpperCase() + randomName.slice(1);
 }
 
+export function getCoachLevels(): string[] {
+  return ['Rookie', 'Veteran', 'Experienced', 'Emerging Star', 'Star', 'Super Star', 'Legend']
+}
+
 function getRandomLevel(): string {
-  const levels = ['Rookie', 'Veteran', 'Experienced', 'Emerging Star', 'Star', 'Super Star', 'Legend']
-  return getRandomArrayElement(levels)
+  return getRandomArrayElement(getCoachLevels())
 }
 
 export function getRandomTeam(coachId: number): Team {

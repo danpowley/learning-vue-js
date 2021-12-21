@@ -27,12 +27,24 @@
 
       <div class="panel">
         <div class="panel__header">
+          TV Difference
+        </div>
+        <div class="panel__body">
+          <div>
+            <input type="number" max="2000" min="0" step="100" size="6" @change="validateTvDifference" id="gamefinder-tv-difference" v-model.number="teamValueDifference" />
+            <label for="gamefinder-tv-difference">Max TV Difference (+/-)</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel__header">
           Races
         </div>
         <div class="panel__body">
           <div>
             <input type="checkbox" id="gamefinder-allow-mirrors" v-model="allowMirrors" />
-            <label for="'gamefinder-allow-mirrors">Allow mirrors</label>
+            <label for="gamefinder-allow-mirrors">Allow mirrors</label>
           </div>
           <hr>
           <template v-for="race in races">
@@ -40,6 +52,22 @@
               <div>
                 <input type="checkbox" :id="'gamefinder-race-' + race" v-model="appliedRaces" :value="race" />
                 <label :for="'gamefinder-race-' + race">{{ race }}</label>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel__header">
+          Coach levels
+        </div>
+        <div class="panel__body">
+          <template v-for="coachLevel in coachLevels">
+            <div :key="coachLevel">
+              <div>
+                <input type="checkbox" :id="'gamefinder-coach-level-' + coachLevel" v-model="appliedCoachLevels" :value="coachLevel" />
+                <label :for="'gamefinder-coach-level-' + coachLevel">{{ coachLevel }}</label>
               </div>
             </div>
           </template>
@@ -73,7 +101,7 @@ import { PropType } from 'vue';
 import axios from 'axios'
 import MatchComponent from '@/components/GameFinder/Match.vue'
 import { Team, Coach } from '@/interfaces'
-import { getRaces } from '@/fake-data-generation'
+import { getRaces, getCoachLevels } from '@/fake-data-generation'
 import { Matchup, MatchupStatus, TeamIdPair, GameFinderCoachRequest } from '@/components/GameFinder/interfaces'
 
 export default Vue.extend({
@@ -98,9 +126,12 @@ export default Vue.extend({
       offers: [] as TeamIdPair[],
       rejections: [] as TeamIdPair[],
       pollingIntervalId: undefined as number | undefined,
+      teamValueDifference: 2000,
       races: getRaces().sort(),
       appliedRaces: getRaces(),
-      allowMirrors: true
+      allowMirrors: true,
+      coachLevels: getCoachLevels(),
+      appliedCoachLevels: getCoachLevels()
     }
   },
   computed: {
@@ -147,8 +178,8 @@ export default Vue.extend({
             allowMirrors: this.allowMirrors,
             allowedRaces: this.appliedRaces
           },
-          teamValueDifference: 200,
-          coachLevels: []
+          teamValueDifference: this.teamValueDifference,
+          coachLevels: this.appliedCoachLevels
         }
       }
     },
@@ -157,6 +188,17 @@ export default Vue.extend({
       const gameFinderCoachRequest = this.gameFinderCoachRequest
 
       for (const opponentGameFinderCoachRequest of this.opponentGameFinderCoachRequests) {
+
+        // remove any coach levels we have not allowed
+        if (! gameFinderCoachRequest.settings.coachLevels.includes(opponentGameFinderCoachRequest.coach.level)) {
+          continue
+        }
+
+        // remove any coach levels they have not allowed
+        if (! opponentGameFinderCoachRequest.settings.coachLevels.includes(gameFinderCoachRequest.coach.level)) {
+          continue
+        }
+
         for (const opponentGameFinderTeam of opponentGameFinderCoachRequest.teams) {
 
           // remove any races we have not allowed
@@ -176,6 +218,12 @@ export default Vue.extend({
               if (myGameFinderTeam.team.race === opponentGameFinderTeam.team.race) {
                 continue
               }
+            }
+
+            // remove any matches exceeding either coaches maximum allowed TV difference
+            const matchupTvDifference = Math.abs(myGameFinderTeam.team.teamValue - opponentGameFinderTeam.team.teamValue)
+            if (matchupTvDifference > gameFinderCoachRequest.settings.teamValueDifference || matchupTvDifference > opponentGameFinderCoachRequest.settings.teamValueDifference) {
+              continue;
             }
 
             let matchupStatus: MatchupStatus = 'AVAILABLE'
@@ -251,6 +299,16 @@ export default Vue.extend({
     },
     availableMatchup (teamIdPair: TeamIdPair) {
       this.clearOffersAndRejections(teamIdPair)
+    },
+    validateTvDifference() {
+      const allowedValues = []
+      for (let i=100; i<=2000; i+=100) {
+        allowedValues.push(i)
+      }
+      if (! allowedValues.includes(this.teamValueDifference)) {
+        alert('Please enter a number between 100 and 2000 (increments of 100 only)');
+        this.teamValueDifference = 2000
+      }
     }
   },
   created: function (): void {
