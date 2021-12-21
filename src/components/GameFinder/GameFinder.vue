@@ -8,11 +8,17 @@
         <div class="panel__header">
           My Teams
         </div>
-        <div class="panel__body gamefinder-myteams">
+        <div class="panel__body">
           <template v-for="team in myTeams">
-            <div :key="team.id">
-              <input type="checkbox" :id="'gamefinder-apply-team-' + team.id" v-model="appliedTeamIds" :value="team.id" />
-              <label :for="'gamefinder-apply-team-' + team.id">{{ team.name }}</label>
+            <div :key="team.id" class="team-choices">
+              <div class="team-choice team-choice-input">
+                <input type="checkbox" :id="'gamefinder-apply-team-' + team.id" v-model="appliedTeamIds" :value="team.id" />
+              </div>
+              <div class="team-choice team-choice-details">
+                <label :for="'gamefinder-apply-team-' + team.id">{{ team.name }}</label>
+                <br>
+                {{ team.teamValue }}k {{ team.race }}
+              </div>
             </div>
           </template>
         </div>
@@ -224,12 +230,34 @@ export default Vue.extend({
   grid-area: gamefinder-results;
 }
 
-.gamefinder-myteams {
-  padding: 10px;
-}
-
 .gamefinder-results-table {
   border-collapse: collapse;
   margin-left: 10px;
+}
+
+.team-choices {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.team-choice {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  border-bottom: solid black 1px;
+}
+
+.team-choice label {
+  font-size: 110%;
+}
+
+.team-choice-input {
+  flex: 1;
+}
+
+.team-choice-details {
+  flex: 7;
 }
 </style>

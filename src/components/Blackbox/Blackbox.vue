@@ -4,6 +4,7 @@
 
   <div class="blackbox-container">
     <div class="blackbox-state">
+
       <div class="panel">
         <div class="panel__header">Blackbox State</div>
         <div class="panel__body blackbox-current-info">
@@ -21,18 +22,29 @@
             <div>Time of next draw: {{ currentInfo.timeOfNextDraw ? displayTime(currentInfo.timeOfNextDraw) : '...' }}</div>
             <div>Draw ID: {{ currentInfo.drawId }}</div>
           </div>
-          <div class="subheading">Available teams</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel__header">My Teams</div>
+        <div class="panel__body">
           <div v-show="!myTeams.length">
             No teams available.
           </div>
           <template v-for="team in myTeams">
-            <div :key="team.id">
-              <input type="checkbox" :id="'blackbox-apply-team-' + team.id" v-model="appliedTeamIds" :value="team.id" />
-              <label :for="'blackbox-apply-team-' + team.id">{{ team.name }}</label>
+            <div :key="team.id" class="team-choices">
+              <div class="team-choice team-choice-input">
+                <input type="checkbox" :id="'blackbox-apply-team-' + team.id" v-model="appliedTeamIds" :value="team.id" />
+              </div>
+              <div class="team-choice team-choice-details">
+                <label :for="'blackbox-apply-team-' + team.id">{{ team.name }}</label>
+                <br>
+                {{ team.teamValue }}k {{ team.race }}
+              </div>
             </div>
           </template>
           <template v-if="myTeams.length">
-            <div>
+            <div style="padding: 10px;">
               <button @click="activateTeams">{{ isActivated ? 'Change teams' : 'Activate teams' }}</button>
               <template v-if="isActivated">
                 <button @click="deactivateTeams" style="float: right;">Deactivate</button>
@@ -41,6 +53,7 @@
           </template>
         </div>
       </div>
+
     </div>
     <div class="blackbox-draws">
       <template v-for="drawResult in drawResults">
@@ -254,6 +267,32 @@ export default Vue.extend({
 .deactivated {
   color: red;
   font-weight: bold;
+}
+
+.team-choices {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.team-choice {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  border-bottom: solid black 1px;
+}
+
+.team-choice label {
+  font-size: 110%;
+}
+
+.team-choice-input {
+  flex: 1;
+}
+
+.team-choice-details {
+  flex: 7;
 }
 
 .match-result-container {
