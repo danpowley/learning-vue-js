@@ -1,3 +1,5 @@
+import randomWords from 'random-words'
+
 export interface Team {
   id: number,
   coachId: number,
@@ -58,8 +60,8 @@ function getRandomDivision(): string {
 }
 
 function getRandomTeamName(): string {
-  const words = ['Amazing', 'Beak', 'Lamp', 'Warriors', 'North', 'Green', 'Vicious', 'Triple', 'Iron', 'Golden', 'Bright', 'Dark', 'Fearless', 'Lightning']
-  return `${getRandomArrayElement(words)} ${getRandomArrayElement(words)} ${getRandomArrayElement(words)}`
+  const randomName = randomWords({min: 2, max: 4}).join(' ');
+  return randomName[0].toUpperCase() + randomName.slice(1);
 }
 
 function getRandomLevel(): string {
