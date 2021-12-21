@@ -4,6 +4,7 @@
 
   <div class="gamefinder-container">
     <div class="gamefinder-settings">
+
       <div class="panel">
         <div class="panel__header">
           My Teams
@@ -23,6 +24,28 @@
           </template>
         </div>
       </div>
+
+      <div class="panel">
+        <div class="panel__header">
+          Races
+        </div>
+        <div class="panel__body">
+          <div>
+            <input type="checkbox" id="gamefinder-allow-mirrors" v-model="allowMirrors" />
+            <label for="'gamefinder-allow-mirrors">Allow mirrors</label>
+          </div>
+          <hr>
+          <template v-for="race in races">
+            <div :key="race">
+              <div>
+                <input type="checkbox" :id="'gamefinder-race-' + race" v-model="appliedRaces" :value="race" />
+                <label :for="'gamefinder-race-' + race">{{ race }}</label>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
     </div>
     <div class="gamefinder-results">
       <div class="panel">
@@ -50,6 +73,7 @@ import { PropType } from 'vue';
 import axios from 'axios'
 import MatchComponent from '@/components/GameFinder/Match.vue'
 import { Team, Coach } from '@/interfaces'
+import { getRaces } from '@/fake-data-generation'
 import { Matchup, MatchupStatus, TeamIdPair, GameFinderCoachRequest } from '@/components/GameFinder/interfaces'
 
 export default Vue.extend({
@@ -74,6 +98,9 @@ export default Vue.extend({
       offers: [] as TeamIdPair[],
       rejections: [] as TeamIdPair[],
       pollingIntervalId: undefined as number | undefined,
+      races: getRaces().sort(),
+      appliedRaces: getRaces(),
+      allowMirrors: true
     }
   },
   computed: {
@@ -117,8 +144,8 @@ export default Vue.extend({
         teams: gameFinderTeams,
         settings: {
           race: {
-            allowMirrors: false,
-            allowedRaces: []
+            allowMirrors: this.allowMirrors,
+            allowedRaces: this.appliedRaces
           },
           teamValueDifference: 200,
           coachLevels: []
@@ -131,7 +158,25 @@ export default Vue.extend({
 
       for (const opponentGameFinderCoachRequest of this.opponentGameFinderCoachRequests) {
         for (const opponentGameFinderTeam of opponentGameFinderCoachRequest.teams) {
+
+          // remove any races we have not allowed
+          if (! gameFinderCoachRequest.settings.race.allowedRaces.includes(opponentGameFinderTeam.team.race)) {
+            continue
+          }
+
           for (const myGameFinderTeam of gameFinderCoachRequest.teams) {
+
+            // remove any races our opponent has not allowed
+            if (! opponentGameFinderCoachRequest.settings.race.allowedRaces.includes(myGameFinderTeam.team.race)) {
+              continue
+            }
+
+            // remove mirrors if either coach rejected mirror matches
+            if (! gameFinderCoachRequest.settings.race.allowMirrors || ! opponentGameFinderCoachRequest.settings.race.allowMirrors) {
+              if (myGameFinderTeam.team.race === opponentGameFinderTeam.team.race) {
+                continue
+              }
+            }
 
             let matchupStatus: MatchupStatus = 'AVAILABLE'
 

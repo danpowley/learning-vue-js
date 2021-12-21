@@ -7,16 +7,19 @@ function getRandomInteger(max: number): number {
 }
 
 function getRandomId(): number {
-  return getRandomInteger(100000)
+  return getRandomInteger(1000000)
 }
 
 function getRandomArrayElement<Type>(array: Type[]): Type {
   return array[getRandomInteger(array.length)]
 }
 
+export function getRaces(): string[] {
+  return ['Human', 'Imperial Nobility', 'Nurgle', 'Khorne', 'Norse', 'Amazon', 'Wood Elves', 'Dark Elves', 'Tomb Kings', 'Elven Union', 'Black Orc', 'Goblin', 'Snotling', 'Underworld Denizen', 'Orc', 'Skaven']
+}
+
 function getRandomRace(): string {
-  const races = ['Human', 'Imperial Nobility', 'Nurgle', 'Khorne', 'Norse', 'Amazon', 'Wood Elves', 'Dark Elves', 'Tomb Kings', 'Elven Union', 'Black Orc', 'Goblin', 'Snotling', 'Underworld Denizen', 'Orc', 'Skaven']
-  return getRandomArrayElement(races)
+  return getRandomArrayElement(getRaces())
 }
 
 function getRandomDivision(): string {
