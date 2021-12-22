@@ -1,7 +1,27 @@
 <template>
-<div class="gamefinder__match" :class="matchClassObject">
-  <div style="float: right;">
-
+<tr>
+  <td class="match-myteam" style="width: 180px;">
+    <div style="font-size: 115%;">{{ matchup.myTeam.team.race }} - {{ matchup.myTeam.team.teamValue }}k 🛈</div>
+    <div>{{ matchup.myTeam.team.name }}</div>
+  </td>
+  <td class="match-oppteam" style="width: 180px;">
+    <div style="font-size: 115%;">{{ matchup.opponentTeam.team.race }} - {{ matchup.opponentTeam.team.teamValue }}k 🛈</div>
+    <div>{{ matchup.opponentTeam.team.name }}</div>
+  </td>
+  <td class="match-coach" style="width: 80px;">
+    <div style="font-size: 115%;">{{ matchup.opponentTeam.coach.level }}</div>
+    {{ matchup.opponentTeam.coach.name }}<br>
+  </td>
+  <td class="match-tvdiff">
+    <div style="font-size: 130%;">
+      <strong>{{ matchup.myTeam.team.teamValue > matchup.opponentTeam.team.teamValue ? '&uarr;' : '&darr;' }}</strong>
+      {{ Math.abs(matchup.myTeam.team.teamValue - matchup.opponentTeam.team.teamValue) }}
+    </div>
+  </td>
+  <td class="match-status" style="width: 110px; text-align: right;">
+    <div v-show="statusTagClass !== false" style="margin-bottom: 3px">
+      <span class="status-tag" :class="statusTagClass">{{ statusTagText }}</span>
+    </div>
     <template v-if="isOpponentOffered">
       <button @click="offerMatchup">Accept</button>
       <button @click="rejectMatchup">Reject</button>
@@ -22,32 +42,14 @@
     <template v-else>
       Error, unknown status.
     </template>
-
-  </div>
-
-  <div>
-    {{ matchup.name }}
-    <span v-show="statusTagClass !== false" class="status-tag" :class="statusTagClass">{{ statusTagText }}</span>
-  </div>
-  <div style="font-size: smaller; margin-top: 5px;">
-    <em>
-      ({{ matchup.coachDetails.level }}) {{ matchup.coachDetails.name }}'s {{ matchup.teamValue }}k {{ matchup.race }}
-    </em>
-  </div>
-</div>
+  </td>
+</tr>
 </template>
 
 <script lang="ts">
-import { Matchup } from '@/fake-fumbbl-api';
+import { Matchup } from '@/components/GameFinder/interfaces';
 import Vue from 'vue';
 import { PropType } from 'vue';
-
-interface MatchClassObject {
-  matchupOffered: boolean,
-  matchupRejected: boolean,
-  opponentOffered: boolean,
-  play: boolean
-}
 
 export default Vue.extend({
   name: 'Match',
@@ -58,9 +60,6 @@ export default Vue.extend({
     }
   },
   computed: {
-    matchupKey (): string {
-      return `${this.matchup.myTeamId}-${this.matchup.opponentTeamId}`
-    },
     isAvailable (): boolean {
       return this.matchup.matchupStatus === 'AVAILABLE'
     },
@@ -75,14 +74,6 @@ export default Vue.extend({
     },
     isPlay (): boolean {
       return this.matchup.matchupStatus === 'PLAY'
-    },
-    matchClassObject (): MatchClassObject {
-      return {
-        matchupOffered: this.isOffered,
-        matchupRejected: this.isRejected,
-        opponentOffered: this.isOpponentOffered,
-        play: this.isPlay
-      }
     },
     statusTagClass (): string | false {
       if (this.isRejected) {
@@ -104,7 +95,7 @@ export default Vue.extend({
         return 'Rejected by you.'
       }
       if (this.isOpponentOffered) {
-        return 'Opponent has offered.'
+        return 'Opponent offered.'
       }
       if (this.isOffered) {
         return 'You have offered.'
@@ -120,40 +111,31 @@ export default Vue.extend({
       alert('Sorry, we haven\'t quite got round to this bit!')
     },
     offerMatchup () {
-      this.$emit('offer-matchup', this.matchup.opponentTeamId)
+      const teamIdPair = {
+        myTeamId: this.matchup.myTeam.team.id,
+        opponentTeamId: this.matchup.opponentTeam.team.id
+      }
+      this.$emit('offer-matchup', teamIdPair)
     },
     rejectMatchup () {
-      this.$emit('reject-matchup', this.matchup.opponentTeamId)
+      const teamIdPair = {
+        myTeamId: this.matchup.myTeam.team.id,
+        opponentTeamId: this.matchup.opponentTeam.team.id
+      }
+      this.$emit('reject-matchup', teamIdPair)
     },
     availableMatchup () {
-      this.$emit('available-matchup', this.matchup.opponentTeamId)
+      const teamIdPair = {
+        myTeamId: this.matchup.myTeam.team.id,
+        opponentTeamId: this.matchup.opponentTeam.team.id
+      }
+      this.$emit('available-matchup', teamIdPair)
     }
   }
 });
 </script>
 
 <style scoped>
-.gamefinder__match {
-  border-top: solid black 1px;
-  padding: 5px;
-}
-
-.matchupOffered {
-  background-color: rgb(255, 229, 173);
-}
-
-.matchupRejected {
-  background-color: #eee;
-}
-
-.opponentOffered {
-  background-color: rgb(209, 248, 209);
-}
-
-.play {
-  background-color: rgb(221, 159, 250);
-}
-
 .status-tag {
   font-size: smaller;
   padding: 2px 5px;
@@ -177,5 +159,10 @@ export default Vue.extend({
 .status-tag--play {
   color: white;
   background-color: purple;
+}
+
+td {
+  padding: 4px 20px 4px 0;
+  border-bottom: solid black 1px;
 }
 </style>
