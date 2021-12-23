@@ -146,6 +146,7 @@
 import Vue from 'vue';
 import { PropType } from 'vue';
 import axios from 'axios'
+import { gameFinderApiEndpoints } from '@/components/GameFinder/gamefinder-api-endpoints'
 import MatchComponent from '@/components/GameFinder/Match.vue'
 import { Team, Coach } from '@/interfaces'
 import { getRaces, getCoachLevels } from '@/fake-data-generation'
@@ -460,7 +461,7 @@ export default Vue.extend({
   },
   created: function (): void {
     this.pollingIntervalId = setInterval(function (this: { gameFinderCoachRequest: GameFinderCoachRequest, opponentGameFinderCoachRequests: GameFinderCoachRequest[] }): void {
-      axios.post('http://localhost:3000/game-finder/apply', this.gameFinderCoachRequest)
+      axios.post(gameFinderApiEndpoints.apply, this.gameFinderCoachRequest)
         .then((response) => {
           this.opponentGameFinderCoachRequests = response.data
         })

@@ -44,6 +44,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import axios from 'axios'
+import { apiUrl } from "@/config"
 import { Coach, Team } from '@/interfaces'
 import { getCoach, getRandomTeam } from '@/fake-data-generation'
 import GameFinder from '@/components/GameFinder/GameFinder.vue'
@@ -110,7 +111,7 @@ export default Vue.extend({
     }
   },
   created: function () {
-    axios.get('http://localhost:3000/available')
+    axios.get(apiUrl + '/available')
         .then((response) => {
           if (response.data.available === true) {
             this.searchMode = 'LOGGED_OUT'

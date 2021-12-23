@@ -91,6 +91,7 @@
 import Vue from 'vue';
 import { PropType } from 'vue';
 import axios from 'axios'
+import { blackboxApiEndpoints } from '@/components/Blackbox/blackbox-api-endoints'
 import { Team, Coach } from '@/interfaces'
 import { BlackboxActivation, BlackboxDrawResult, BlackboxCurrent } from '@/components/Blackbox/interfaces'
 
@@ -137,7 +138,7 @@ export default Vue.extend({
   methods: {
     activateTeams() {
       if (this.appliedTeams.length > 0) {
-        axios.post('http://localhost:3000/blackbox/activate', {coach: this.coach, teams: this.appliedTeams})
+        axios.post(blackboxApiEndpoints.activate, {coach: this.coach, teams: this.appliedTeams})
         .then((response) => {
           this.activated = response.data
           this.updateCurrentInfoAndDrawResults()
@@ -147,7 +148,7 @@ export default Vue.extend({
       }
     },
     deactivateTeams() {
-      axios.post('http://localhost:3000/blackbox/deactivate', {coach: this.coach})
+      axios.post(blackboxApiEndpoints.deactivate, {coach: this.coach})
         .then(() => {
           this.activated = null
           this.updateCurrentInfoAndDrawResults()
@@ -172,7 +173,7 @@ export default Vue.extend({
       alert('Sorry, this doesn\'t work yet.')
     },
     updateCurrentInfoAndDrawResults(): void {
-      axios.get('http://localhost:3000/blackbox/latest')
+      axios.get(blackboxApiEndpoints.latest)
         .then((response) => {
           this.currentInfo = response.data.currentInfo
           this.drawResults = response.data.drawResults
