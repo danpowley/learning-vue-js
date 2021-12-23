@@ -1,6 +1,13 @@
 <template>
   <div>
-    <template v-if="!isLoggedIn()">
+    <template v-if="isDisconnected">
+      <div>
+        <h4>Getting things ready...</h4>
+        Sorry, please wait, just checking the necessary services are up and running (this can take up to 30 seconds if no-one has been here recently).
+        <div class="loader"></div>
+      </div>
+    </template>
+    <template v-else-if="isLoggedOut">
       <h4>Log in to the demo (just type any made up coach name)</h4>
       <p>Every tab you open can be a different coach to allow testing making match ups via Blackbox or Game Finder.
       <div>
@@ -36,6 +43,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import axios from 'axios'
 import { Coach, Team } from '@/interfaces'
 import { getCoach, getRandomTeam } from '@/fake-data-generation'
 import GameFinder from '@/components/GameFinder/GameFinder.vue'
@@ -49,13 +57,19 @@ export default Vue.extend({
   },
   data() {
     return {
-      searchMode: 'LOGGED_OUT',
+      searchMode: 'DISCONNECTED',
       coach: null as Coach | null,
       newCoachName: '',
       myTeams: [] as Team[]
     }
   },
   computed: {
+    isDisconnected (): boolean {
+      return this.searchMode === 'DISCONNECTED'
+    },
+    isLoggedOut (): boolean {
+      return this.searchMode === 'LOGGED_OUT'
+    },
     isSearchModeGameFinder (): boolean {
       return this.searchMode === 'GAME_FINDER'
     },
@@ -64,9 +78,6 @@ export default Vue.extend({
     }
   },
   methods: {
-    isLoggedIn() {
-      return this.searchMode !== 'LOGGED_OUT'
-    },
     addRandomTeam() {
       if (this.coach) {
         this.myTeams.push(getRandomTeam(this.coach.id))
@@ -97,9 +108,30 @@ export default Vue.extend({
     setSearchModeBlackbox() {
       this.searchMode = 'BLACKBOX'
     }
+  },
+  created: function () {
+    axios.get('http://localhost:3000/available')
+        .then((response) => {
+          if (response.data.available === true) {
+            this.searchMode = 'LOGGED_OUT'
+          }
+        })
   }
 })
 </script>
 
 <style>
+.loader {
+  border: 4px solid #f3f3f3; /* Light grey */
+  border-top: 4px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 </style>
