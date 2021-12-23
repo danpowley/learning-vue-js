@@ -54,7 +54,7 @@ export function getRandomTeam(coachId: number): Team {
 export function getCoach(coachName: string): Coach {
   return {
     id: getRandomId(),
-    name: coachName,
+    name: coachName + '_' + getRandomInteger(9999).toString(),
     level: getRandomLevel()
   }
 }
