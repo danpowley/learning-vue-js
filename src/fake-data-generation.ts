@@ -14,7 +14,7 @@ function getRandomArrayElement<Type>(array: Type[]): Type {
   return array[getRandomInteger(array.length)]
 }
 
-export function getRaces(): string[] {
+function getRaces(): string[] {
   return ['Human', 'Imperial Nobility', 'Nurgle', 'Khorne', 'Norse', 'Amazon', 'Wood Elves', 'Dark Elves', 'Tomb Kings', 'Elven Union', 'Black Orc', 'Goblin', 'Snotling', 'Underworld Denizen', 'Orc', 'Skaven']
 }
 
@@ -32,7 +32,7 @@ function getRandomTeamName(): string {
   return randomName[0].toUpperCase() + randomName.slice(1);
 }
 
-export function getCoachLevels(): string[] {
+function getCoachLevels(): string[] {
   return ['Rookie', 'Veteran', 'Experienced', 'Emerging Star', 'Star', 'Super Star', 'Legend']
 }
 

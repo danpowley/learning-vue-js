@@ -25,95 +25,6 @@
         </div>
       </div>
 
-      <div class="panel">
-        <div class="panel__header">
-          Sorting
-        </div>
-        <div class="panel__body panel__body--padding">
-          <div>
-            <label for="gamefinder-sorting-option-first">1: </label>
-            <select v-model="sortingOptions.first" id="gamefinder-sorting-option-first">
-              <template v-for="sortingOption in this.getSortingOptions()">
-                <option :key="sortingOption.key" :value="sortingOption.key">{{ sortingOption.value }}</option>
-              </template>
-            </select>
-          </div>
-          <div>
-            <label for="gamefinder-sorting-option-second">2: </label>
-            <select v-model="sortingOptions.second" id="gamefinder-sorting-option-second">
-              <template v-for="sortingOption in this.getSortingOptions()">
-                <option :key="sortingOption.key" :value="sortingOption.key">{{ sortingOption.value }}</option>
-              </template>
-            </select>
-          </div>
-          <div>
-            <label for="gamefinder-sorting-option-third">3: </label>
-            <select v-model="sortingOptions.third" id="gamefinder-sorting-option-third">
-              <template v-for="sortingOption in this.getSortingOptions()">
-                <option :key="sortingOption.key" :value="sortingOption.key">{{ sortingOption.value }}</option>
-              </template>
-            </select>
-          </div>
-          <div>
-            <label for="gamefinder-sorting-option-fourth">4: </label>
-            <select v-model="sortingOptions.fourth" id="gamefinder-sorting-option-fourth">
-              <template v-for="sortingOption in this.getSortingOptions()">
-                <option :key="sortingOption.key" :value="sortingOption.key">{{ sortingOption.value }}</option>
-              </template>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel__header">
-          TV Difference
-        </div>
-        <div class="panel__body panel__body--padding">
-          <div>
-            <input type="number" max="2000" min="0" step="100" size="6" @change="validateTvDifference" id="gamefinder-tv-difference" v-model.number="teamValueDifference" />
-            <label for="gamefinder-tv-difference"> Max TV Diff. (+/-)</label>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel__header">
-          Races
-        </div>
-        <div class="panel__body panel__body--padding">
-          <div>
-            <input type="checkbox" id="gamefinder-allow-mirrors" v-model="allowMirrors" />
-            <label for="gamefinder-allow-mirrors">Allow mirrors</label>
-          </div>
-          <hr>
-          <template v-for="race in races">
-            <div :key="race">
-              <div>
-                <input type="checkbox" :id="'gamefinder-race-' + race" v-model="appliedRaces" :value="race" />
-                <label :for="'gamefinder-race-' + race">{{ race }}</label>
-              </div>
-            </div>
-          </template>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel__header">
-          Coach levels
-        </div>
-        <div class="panel__body panel__body--padding">
-          <template v-for="coachLevel in coachLevels">
-            <div :key="coachLevel">
-              <div>
-                <input type="checkbox" :id="'gamefinder-coach-level-' + coachLevel" v-model="appliedCoachLevels" :value="coachLevel" />
-                <label :for="'gamefinder-coach-level-' + coachLevel">{{ coachLevel }}</label>
-              </div>
-            </div>
-          </template>
-        </div>
-      </div>
-
     </div>
     <div class="gamefinder-results">
       <div class="panel">
@@ -149,8 +60,7 @@ import axios from 'axios'
 import { gameFinderApiEndpoints } from '@/components/GameFinder/gamefinder-api-endpoints'
 import MatchComponent from '@/components/GameFinder/Match.vue'
 import { Team, Coach } from '@/interfaces'
-import { getRaces, getCoachLevels } from '@/fake-data-generation'
-import { Matchup, MatchupStatus, TeamIdPair, GameFinderCoachRequest, SortingOption, SortingChoices, SortingOptionValue } from '@/components/GameFinder/interfaces'
+import { Matchup, MatchupStatus, TeamIdPair, GameFinderCoachRequest } from '@/components/GameFinder/interfaces'
 
 export default Vue.extend({
   name: 'GameFinder',
@@ -174,13 +84,6 @@ export default Vue.extend({
       offers: [] as TeamIdPair[],
       rejections: [] as TeamIdPair[],
       pollingIntervalId: undefined as number | undefined,
-      sortingOptions: { first: 'MY_TEAM_NAME', second: 'TV_DIFFERENCE', third: 'ANY', fourth: 'ANY' } as SortingChoices,
-      teamValueDifference: 2000,
-      races: getRaces().sort(),
-      appliedRaces: getRaces(),
-      allowMirrors: true,
-      coachLevels: getCoachLevels(),
-      appliedCoachLevels: getCoachLevels()
     }
   },
   computed: {
@@ -221,15 +124,7 @@ export default Vue.extend({
 
       return {
         coach: this.coach,
-        teams: gameFinderTeams,
-        settings: {
-          race: {
-            allowMirrors: this.allowMirrors,
-            allowedRaces: this.appliedRaces
-          },
-          teamValueDifference: this.teamValueDifference,
-          coachLevels: this.appliedCoachLevels
-        }
+        teams: gameFinderTeams
       }
     },
     availableMatchups (): Matchup[] {
@@ -238,42 +133,9 @@ export default Vue.extend({
 
       for (const opponentGameFinderCoachRequest of this.opponentGameFinderCoachRequests) {
 
-        // remove any coach levels we have not allowed
-        if (! gameFinderCoachRequest.settings.coachLevels.includes(opponentGameFinderCoachRequest.coach.level)) {
-          continue
-        }
-
-        // remove any coach levels they have not allowed
-        if (! opponentGameFinderCoachRequest.settings.coachLevels.includes(gameFinderCoachRequest.coach.level)) {
-          continue
-        }
-
         for (const opponentGameFinderTeam of opponentGameFinderCoachRequest.teams) {
 
-          // remove any races we have not allowed
-          if (! gameFinderCoachRequest.settings.race.allowedRaces.includes(opponentGameFinderTeam.team.race)) {
-            continue
-          }
-
           for (const myGameFinderTeam of gameFinderCoachRequest.teams) {
-
-            // remove any races our opponent has not allowed
-            if (! opponentGameFinderCoachRequest.settings.race.allowedRaces.includes(myGameFinderTeam.team.race)) {
-              continue
-            }
-
-            // remove mirrors if either coach rejected mirror matches
-            if (! gameFinderCoachRequest.settings.race.allowMirrors || ! opponentGameFinderCoachRequest.settings.race.allowMirrors) {
-              if (myGameFinderTeam.team.race === opponentGameFinderTeam.team.race) {
-                continue
-              }
-            }
-
-            // remove any matches exceeding either coaches maximum allowed TV difference
-            const matchupTvDifference = Math.abs(myGameFinderTeam.team.teamValue - opponentGameFinderTeam.team.teamValue)
-            if (matchupTvDifference > gameFinderCoachRequest.settings.teamValueDifference || matchupTvDifference > opponentGameFinderCoachRequest.settings.teamValueDifference) {
-              continue;
-            }
 
             let matchupStatus: MatchupStatus = 'AVAILABLE'
 
@@ -315,7 +177,7 @@ export default Vue.extend({
         }
       }
 
-      return this.sortMatchups(matchups)
+      return matchups
     }
   },
   methods: {
@@ -349,115 +211,6 @@ export default Vue.extend({
     availableMatchup (teamIdPair: TeamIdPair) {
       this.clearOffersAndRejections(teamIdPair)
     },
-    validateTvDifference() {
-      const allowedValues = []
-      for (let i=100; i<=2000; i+=100) {
-        allowedValues.push(i)
-      }
-      if (! allowedValues.includes(this.teamValueDifference)) {
-        alert('Please enter a number between 100 and 2000 (increments of 100 only)');
-        this.teamValueDifference = 2000
-      }
-    },
-    getSortingOptions(): SortingOption[] {
-      return [
-        {
-          key: 'ANY',
-          value: 'Any'
-        },
-        {
-          key: 'MY_TEAM_NAME',
-          value: 'My Team Name'
-        },
-        {
-          key: 'MY_TEAM_RACE',
-          value: 'My team race'
-        },
-        {
-          key: 'MY_TEAM_VALUE',
-          value: 'My team value'
-        },
-        {
-          key: 'OPPONENT_TEAM_NAME',
-          value: 'Opponent team name'
-        },
-        {
-          key: 'OPPONENT_TEAM_RACE',
-          value: 'Opponent team race'
-        },
-        {
-          key: 'OPPONENT_TEAM_VALUE',
-          value: 'Opponent team value'
-        },
-        {
-          key: 'TV_DIFFERENCE',
-          value: 'TV difference'
-        },
-        {
-          key: 'COACH_LEVEL',
-          value: 'Coach level'
-        }
-      ]
-    },
-    sortMatchups(matchups: Matchup[]): Matchup[] {
-      matchups.sort((a, b) => {
-        const aSortValue = this.sortValueForMatchup(a)
-        const bSortValue = this.sortValueForMatchup(b)
-        if (aSortValue > bSortValue) {
-          return 1
-        } else if (aSortValue < bSortValue) {
-          return -1
-        } else {
-          return 0
-        }
-      })
-
-      return matchups
-    },
-    sortValueForMatchup(matchup: Matchup): string {
-      const myTeamNameValue = matchup.myTeam.team.name.padEnd(250, '.')
-      const myTeamRaceValue = matchup.myTeam.team.race.padEnd(250, '.')
-      const myTeamValue = matchup.myTeam.team.teamValue.toString().padStart(250, '0')
-      const opponentTeamNameValue = matchup.opponentTeam.team.name.padEnd(250, '.')
-      const opponentTeamRaceValue = matchup.opponentTeam.team.race.padEnd(250, '.')
-      const opponentTeamValue = matchup.opponentTeam.team.teamValue.toString().padStart(250, '0')
-      const tvDifferenceValue = (10000 - (matchup.myTeam.team.teamValue - matchup.opponentTeam.team.teamValue)).toString().padStart(250, '0')
-      const coachLevels = getCoachLevels()
-      const coachLevelValue = coachLevels.indexOf(matchup.opponentTeam.coach.level).toString().padEnd(250, '.')
-
-      let fullSortValue = ''
-
-      const appendNextSortValue = function (sortingOptionValue: SortingOptionValue): string {
-        let result = ''
-        if (sortingOptionValue === 'MY_TEAM_NAME') {
-          result = myTeamNameValue
-        } else if (sortingOptionValue === 'MY_TEAM_RACE') {
-          result = myTeamRaceValue
-        } else if (sortingOptionValue === 'MY_TEAM_VALUE') {
-          result = myTeamValue
-        } else if (sortingOptionValue === 'OPPONENT_TEAM_NAME') {
-          result = opponentTeamNameValue
-        } else if (sortingOptionValue === 'OPPONENT_TEAM_RACE') {
-          result = opponentTeamRaceValue
-        } else if (sortingOptionValue === 'OPPONENT_TEAM_VALUE') {
-          result = opponentTeamValue
-        } else if (sortingOptionValue === 'TV_DIFFERENCE') {
-          result = tvDifferenceValue
-        } else if (sortingOptionValue === 'COACH_LEVEL') {
-          result = coachLevelValue
-        } else {
-          result = ''
-        }
-        return result
-      }
-
-      fullSortValue += appendNextSortValue(this.sortingOptions.first)
-      fullSortValue += appendNextSortValue(this.sortingOptions.second)
-      fullSortValue += appendNextSortValue(this.sortingOptions.third)
-      fullSortValue += appendNextSortValue(this.sortingOptions.fourth)
-
-      return fullSortValue
-    }
   },
   created: function (): void {
     this.pollingIntervalId = setInterval(function (this: { gameFinderCoachRequest: GameFinderCoachRequest, opponentGameFinderCoachRequests: GameFinderCoachRequest[] }): void {

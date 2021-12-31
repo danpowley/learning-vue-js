@@ -9,7 +9,7 @@
     </template>
     <template v-else-if="isLoggedOut">
       <h4>Log in to the demo (just type any made up coach name)</h4>
-      <p>Every tab you open can be a different coach to allow testing making match ups via Blackbox or Game Finder.
+      <p>Every tab you open can be a different coach to allow testing making match ups via Game Finder.
       <div>
         <div style="margin-bottom: 10px; font-size: large;">
           <label for="newCoachName">Coach name: </label><input v-model="newCoachName" type="text" id="newCoachName">
@@ -23,18 +23,12 @@
         <button @click="logOut">Log out</button>
       </div>
       <div style="margin-top: 20px;">
-        Choose mode:
-        <button @click="setSearchModeGameFinder()">Game finder</button>
-        <button @click="setSearchModeBlackbox()">Blackbox</button>
-        | <button @click="addRandomTeam">Generate team</button>
+        <button @click="addRandomTeam">Generate team</button>
       </div>
     </template>
 
     <template v-if="isSearchModeGameFinder">
       <game-finder :coach="coach" :my-teams="myTeams"></game-finder>
-    </template>
-    <template v-if="isSearchModeBlackBox">
-      <blackbox :coach="coach" :my-teams="myTeams"></blackbox>
     </template>
 
     <div style="padding-bottom: 800px;"></div>
@@ -48,13 +42,11 @@ import { apiUrl } from "@/config"
 import { Coach, Team } from '@/interfaces'
 import { getCoach, getRandomTeam } from '@/fake-data-generation'
 import GameFinder from '@/components/GameFinder/GameFinder.vue'
-import Blackbox from '@/components/Blackbox/Blackbox.vue'
 
 export default Vue.extend({
   name: 'App',
   components: {
-    GameFinder,
-    Blackbox
+    GameFinder
   },
   data() {
     return {
@@ -73,9 +65,6 @@ export default Vue.extend({
     },
     isSearchModeGameFinder (): boolean {
       return this.searchMode === 'GAME_FINDER'
-    },
-    isSearchModeBlackBox (): boolean {
-      return this.searchMode === 'BLACKBOX'
     }
   },
   methods: {
@@ -102,12 +91,6 @@ export default Vue.extend({
       this.myTeams = []
       this.searchMode = 'LOGGED_OUT'
       this.newCoachName = ''
-    },
-    setSearchModeGameFinder() {
-      this.searchMode = 'GAME_FINDER'
-    },
-    setSearchModeBlackbox() {
-      this.searchMode = 'BLACKBOX'
     }
   },
   created: function () {
