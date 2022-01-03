@@ -1,13 +1,6 @@
 <template>
   <div>
-    <template v-if="isDisconnected">
-      <div>
-        <h4>Getting things ready...</h4>
-        Sorry, please wait, just checking the necessary services are up and running (this can take up to 30 seconds if no-one has been here recently).
-        <div class="loader"></div>
-      </div>
-    </template>
-    <template v-else-if="isLoggedOut">
+    <template v-if="isLoggedOut">
       <h4>Log in to the demo (just type any made up coach name)</h4>
       <p>Every tab you open can be a different coach to allow testing making match ups via Game Finder.
       <div>
@@ -18,29 +11,22 @@
       </div>
     </template>
     <template v-else>
-      <div style="float: right; font-size: 16pt">
+      <div>
         Coach: {{ coach.name }} ({{ coach.level }})
         <button @click="logOut">Log out</button>
-      </div>
-      <div style="margin-top: 20px;">
-        <button @click="addRandomTeam">Generate team</button>
       </div>
     </template>
 
     <template v-if="isSearchModeGameFinder">
-      <game-finder :coach="coach" :my-teams="myTeams"></game-finder>
+      <game-finder :coach="coach"></game-finder>
     </template>
-
-    <div style="padding-bottom: 800px;"></div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
-import axios from 'axios'
-import { apiUrl } from "@/config"
-import { Coach, Team } from '@/interfaces'
-import { getCoach, getRandomTeam } from '@/fake-data-generation'
+import { Coach } from '@/interfaces'
+import { getCoach } from '@/fake-data-generation'
 import GameFinder from '@/components/GameFinder/GameFinder.vue'
 
 export default Vue.extend({
@@ -50,16 +36,12 @@ export default Vue.extend({
   },
   data() {
     return {
-      searchMode: 'DISCONNECTED',
-      coach: null as Coach | null,
-      newCoachName: '',
-      myTeams: [] as Team[]
+      searchMode: 'GAME_FINDER',
+      coach: getCoach('Bob') as Coach | null,
+      newCoachName: ''
     }
   },
   computed: {
-    isDisconnected (): boolean {
-      return this.searchMode === 'DISCONNECTED'
-    },
     isLoggedOut (): boolean {
       return this.searchMode === 'LOGGED_OUT'
     },
@@ -68,18 +50,9 @@ export default Vue.extend({
     }
   },
   methods: {
-    addRandomTeam() {
-      if (this.coach) {
-        this.myTeams.push(getRandomTeam(this.coach.id))
-      }
-    },
     logIn() {
       if (this.newCoachName) {
         this.coach = getCoach(this.newCoachName)
-        this.myTeams = []
-        this.myTeams.push(getRandomTeam(this.coach.id))
-        this.myTeams.push(getRandomTeam(this.coach.id))
-        this.myTeams.push(getRandomTeam(this.coach.id))
         this.searchMode = 'GAME_FINDER'
         this.newCoachName = ''
       } else {
@@ -88,18 +61,9 @@ export default Vue.extend({
     },
     logOut() {
       this.coach = null
-      this.myTeams = []
       this.searchMode = 'LOGGED_OUT'
       this.newCoachName = ''
     }
-  },
-  created: function () {
-    axios.get(apiUrl + '/available')
-        .then((response) => {
-          if (response.data.available === true) {
-            this.searchMode = 'LOGGED_OUT'
-          }
-        })
   }
 })
 </script>
