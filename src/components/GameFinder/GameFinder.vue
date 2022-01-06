@@ -37,7 +37,7 @@
         </div>
 
         <template v-for="team in isLfgTeams">
-          <div class="team" :key="team.id" @click="chooseOpponents(team)" :class="{'team--selected': chosenTeam !== null && chosenTeam.id === team.id}">
+          <div class="team" :key="team.id" @click="chooseOpponents(team)" :class="{'team--selected': chosenTeam.team !== null && chosenTeam.team.id === team.id}">
             <div class="arrow-right"></div>
             <div class="teamname">{{ team.name }}</div>
             <div class="teamracevalue"><em>TV {{ team.teamValue/1000 }}k {{ team.race }}</em></div>
@@ -50,42 +50,26 @@
 
         <div class="title">Opponents <span class="smalltitletext">({{ chosenTeamName }})</span></div>
 
-        <div v-show="this.loadingOpponents" class="loader"></div>
-
-        <div class="opponent" :class="{ reloading: this.loadingOpponents }">
-          <div class="coachheader">
-            Jonno (Legend)
-          </div>
-          <div class="coachteams">
-            <div class="coachteam">
-              <div>Team 1</div>
-              <div class="coachteamrace">Orc 1200k TV</div>
-              <div class="offerstatusinfo"><span class="statuslabel statuslabel--offersent">Offer sent</span></div>
-            </div>
-            <div class="coachteam">
-              <div>Team 2</div>
-              <div class="coachteamrace">Goblins 1200k TV</div>
-              <div class="offerstatusinfo"><span class="statuslabel statuslabel--offersent">Offer sent</span></div>
-            </div>
-          </div>
+        <div v-show="this.chosenTeam.opponents.length === 0">
+          No opponents found.
         </div>
-        <!-- <div class="opponent">
-          <div class="coachheader">
-            Greggo (Legend)
-          </div>
-          <div class="coachteams">
-            <div class="coachteam coachteam--offered">
-              <div>Team 3</div>
-              <div class="coachteamrace">Imperial Nobility 1200k TV</div>
-              <div class="offerstatusinfo"><span class="statuslabel statuslabel--offersent">Offer sent</span></div>
+
+        <template v-for="coachTeams in this.chosenTeam.opponents">
+          <div class="opponent" :class="{ reloading: _self.loadingOpponents }" :key="coachTeams.id">
+            <div class="coachheader">
+              {{ coachTeams.name }} (Legend)
             </div>
-            <div class="coachteam">
-              <div>Team 4</div>
-              <div class="coachteamrace">Skaven 1200k TV</div>
-              <div class="offerstatusinfo"><span class="statuslabel statuslabel--offersent">Offer sent</span></div>
-            </div>
+            <template v-for="team in coachTeams.teams">
+              <div class="coachteams" :key="team.id">
+                <div class="coachteam <!--coachteam--offered-->">
+                  <div>{{ team.name }}</div>
+                  <div class="coachteamrace">TV {{ team.teamValue }}k {{ team.race }}</div>
+                  <div class="offerstatusinfo"><span class="statuslabel statuslabel--offersent">Offer sent</span></div>
+                </div>
+              </div>
+            </template>
           </div>
-        </div> -->
+        </template>
 
       </div>
 
@@ -205,6 +189,37 @@ interface CoachTeams {
   teams: Team[],
 }
 
+interface ChosenTeam {
+  team: Team | null,
+  opponents: CoachTeams[]
+}
+
+function getRandomTeam(coachId: number): Team {
+  const teamId = getRandomId()
+  return {
+    id: teamId,
+    coachId: coachId,
+    name: 'RandoTeam-' + teamId,
+    rosterId: 5145,
+    race: "Tomb Kings",
+    teamValue: 1430000,
+    canLfg: "Yes",
+    isLfg: 'Yes',
+    games: "1",
+    divisionId: 2,
+    division: "Competitive",
+    leagueId: 0,
+    league: null,
+    status: "Active",
+    raceLogos: [
+      {
+        size: 32,
+        logo: 486296
+      },
+    ]
+  }
+}
+
 const api = {
   coachTeamsIsLfg: function (teamIds: number[]) {
     console.log('API: /coach/teams/islfg (new api method', teamIds)
@@ -283,6 +298,30 @@ const api = {
         },
       ]
     }
+  },
+  teamOpponents(teamId: number): CoachTeams[] {
+    console.log('API: /team/opponents/{teamId} new API endpoint needed')
+
+    const result = []
+
+    const numberOfCoaches = getRandomInteger(10)
+    for (let i = 0; i < numberOfCoaches; i++) {
+      const coachId = getRandomId();
+      const numberOfTeams = getRandomInteger(5) + 1
+
+      const teams = [] as Team[]
+      for (let j = 0; j < numberOfTeams; j++) {
+        teams.push(getRandomTeam(coachId))
+      }
+
+      result.push({
+        id: coachId,
+        name: 'RandoCoach-' + coachId,
+        teams: teams
+      })
+    }
+
+    return result
   }
 }
 
@@ -302,7 +341,7 @@ export default Vue.extend({
       allTeams: false,
       teams: [] as Team[],
       selectedIsLfgTeamIds: [] as number[],
-      chosenTeam: null as Team | null,
+      chosenTeam: {team: null, opponents: []} as ChosenTeam,
       loadingOpponents: false,
       pollingIntervalId: undefined as number | undefined,
     }
@@ -327,7 +366,7 @@ export default Vue.extend({
       return isLfgTeams
     },
     chosenTeamName(): string {
-      return this.chosenTeam ? this.chosenTeam.name : 'Please choose team'
+      return this.chosenTeam.team ? this.chosenTeam.team.name : 'Please choose team'
     }
   },
   methods: {
@@ -338,7 +377,7 @@ export default Vue.extend({
       api.coachTeamsIsLfg(this.selectedIsLfgTeamIds)
       const coachTeamResult = api.coachTeams(this.coach.name, this.selectedIsLfgTeamIds)
       this.teams = coachTeamResult.teams
-      this.chosenTeam = null
+      this.chosenTeam = {team: null, opponents: []}
       this.display = 'lfg'
     },
     toggleAllTeams() {
@@ -350,9 +389,10 @@ export default Vue.extend({
       }
     },
     chooseOpponents(team: Team) {
-      this.chosenTeam = team
+      this.chosenTeam.team = team
       this.loadingOpponents = true
-      setTimeout(function (this: {loadingOpponents: boolean}): void {
+      setTimeout(function (this: {loadingOpponents: boolean, chosenTeam: ChosenTeam}): void {
+        this.chosenTeam.opponents = api.teamOpponents(team.id)
         this.loadingOpponents = false
       }.bind(this), 1000)
     }
